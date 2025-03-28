@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -182,7 +183,7 @@ const Members = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      No alumni found matching your criteria
+                      <p>No alumni found matching your criteria</p>
                     </TableCell>
                   </TableRow>
                 )}
