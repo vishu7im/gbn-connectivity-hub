@@ -29,8 +29,8 @@ const alumniData = [
 
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedBatch, setSelectedBatch] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [selectedBatch, setSelectedBatch] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -44,8 +44,8 @@ const Members = () => {
                           alumni.company.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           alumni.currentRole.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesDepartment = selectedDepartment === "" || alumni.department === selectedDepartment;
-    const matchesBatch = selectedBatch === "" || alumni.batch === selectedBatch;
+    const matchesDepartment = selectedDepartment === "all" || alumni.department === selectedDepartment;
+    const matchesBatch = selectedBatch === "all" || alumni.batch === selectedBatch;
     
     return matchesSearch && matchesDepartment && matchesBatch;
   });
@@ -58,8 +58,8 @@ const Members = () => {
 
   const resetFilters = () => {
     setSearchTerm("");
-    setSelectedDepartment("");
-    setSelectedBatch("");
+    setSelectedDepartment("all");
+    setSelectedBatch("all");
     setCurrentPage(1);
   };
 
@@ -99,7 +99,7 @@ const Members = () => {
                       <SelectValue placeholder="All Departments" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Departments</SelectItem>
+                      <SelectItem value="all">All Departments</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                       ))}
@@ -114,7 +114,7 @@ const Members = () => {
                       <SelectValue placeholder="All Batches" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Batches</SelectItem>
+                      <SelectItem value="all">All Batches</SelectItem>
                       {batches.map((batch) => (
                         <SelectItem key={batch} value={batch}>{batch}</SelectItem>
                       ))}
