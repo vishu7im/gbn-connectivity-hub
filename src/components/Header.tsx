@@ -2,6 +2,7 @@
 import React from "react";
 import { GraduationCap, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -24,7 +25,8 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <a href="#" className="hover:text-[#e6c200] transition-colors">Home</a>
+            <Link to="/" className="hover:text-[#e6c200] transition-colors">Home</Link>
+            <Link to="/members" className="hover:text-[#e6c200] transition-colors">Members</Link>
             <a href="#news" className="hover:text-[#e6c200] transition-colors">News</a>
             <a href="#events" className="hover:text-[#e6c200] transition-colors">Events</a>
             <a href="#principal" className="hover:text-[#e6c200] transition-colors">Principal's Desk</a>
@@ -48,7 +50,8 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 animate-fade-in">
             <nav className="flex flex-col space-y-4 pb-4">
-              <a href="#" className="hover:text-[#e6c200] transition-colors">Home</a>
+              <Link to="/" className="hover:text-[#e6c200] transition-colors">Home</Link>
+              <Link to="/members" className="hover:text-[#e6c200] transition-colors">Members</Link>
               <a href="#news" className="hover:text-[#e6c200] transition-colors">News</a>
               <a href="#events" className="hover:text-[#e6c200] transition-colors">Events</a>
               <a href="#principal" className="hover:text-[#e6c200] transition-colors">Principal's Desk</a>
