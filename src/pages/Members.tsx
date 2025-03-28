@@ -1,5 +1,5 @@
-
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Search, UserRound, GraduationCap, Briefcase } from "lucide-react";
+import { Search, UserRound, GraduationCap, Briefcase, ExternalLink } from "lucide-react";
 
 // Sample alumni data
 const alumniData = [
@@ -144,17 +144,20 @@ const Members = () => {
                   <TableHead>Department</TableHead>
                   <TableHead>Current Role</TableHead>
                   <TableHead>Company</TableHead>
+                  <TableHead className="w-[100px]">View Profile</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {currentItems.length > 0 ? (
                   currentItems.map((alumni) => (
-                    <TableRow key={alumni.id}>
+                    <TableRow key={alumni.id} className="cursor-pointer hover:bg-slate-100">
                       <TableCell className="font-medium flex items-center gap-2">
                         <div className="bg-[#0a2463] text-white p-1 rounded-full">
                           <UserRound size={20} />
                         </div>
-                        {alumni.name}
+                        <Link to={`/members/${alumni.id}`} className="hover:text-[#0a2463] hover:underline">
+                          {alumni.name}
+                        </Link>
                       </TableCell>
                       <TableCell className="flex items-center gap-2">
                         <GraduationCap size={16} className="text-[#e6c200]" />
@@ -166,11 +169,19 @@ const Members = () => {
                         <Briefcase size={16} className="text-gray-500" />
                         {alumni.company}
                       </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/members/${alumni.id}`}>
+                            <ExternalLink size={16} />
+                            <span className="sr-only">View Profile</span>
+                          </Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       No alumni found matching your criteria
                     </TableCell>
                   </TableRow>
