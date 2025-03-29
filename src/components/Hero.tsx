@@ -23,10 +23,10 @@ const Hero = () => {
             Connecting generations of excellence, fostering lifelong relationships, and promoting the legacy of our institution.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button className="bg-[#e6c200] hover:bg-[#d4b400] text-[#0a2463] font-semibold">
+            <Button className="bg-primary text-primary-foreground font-semibold">
               Join the Network
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[#0a2463]">
+            <Button variant="outline" className="bg-primary text-primary-foreground">
               Explore Alumni Stories
             </Button>
           </div>
