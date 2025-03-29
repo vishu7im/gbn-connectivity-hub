@@ -22,37 +22,33 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const bgColor = theme === "dark" ? "bg-background" : "bg-[#0a2463]";
-  const textColor = theme === "dark" ? "text-foreground" : "text-white";
-  const hoverColor = "hover:text-[#e6c200] transition-colors";
-
   return (
-    <header className={`${bgColor} ${textColor} shadow-md sticky top-0 z-50`}>
+    <header className="bg-background text-foreground border-b shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-[#e6c200]" />
+            <GraduationCap className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-xl font-bold">GBN Polytechnic</h1>
-              <p className="text-sm text-gray-300">Alumni Association</p>
+              <p className="text-sm text-muted-foreground">Alumni Association</p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className={hoverColor}>Home</Link>
-            <Link to="/members" className={hoverColor}>Members</Link>
-            <Link to="/jobs" className={hoverColor}>Job Board</Link>
-            <Link to="/developers" className={hoverColor}>Developers</Link>
-            <a href="#news" className={hoverColor}>News</a>
-            <a href="#events" className={hoverColor}>Events</a>
+            <Link to="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+            <Link to="/members" className="text-foreground hover:text-primary transition-colors">Members</Link>
+            <Link to="/jobs" className="text-foreground hover:text-primary transition-colors">Job Board</Link>
+            <Link to="/gallery" className="text-foreground hover:text-primary transition-colors">Gallery</Link>
+            <a href="#news" className="text-foreground hover:text-primary transition-colors">News</a>
+            <a href="#events" className="text-foreground hover:text-primary transition-colors">Events</a>
           </nav>
 
           {user ? (
             <div className="hidden md:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-[#e6c200] text-[#e6c200] hover:bg-[#e6c200] hover:text-[#0a2463]">
+                  <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                     <UserCircle className="mr-2 h-4 w-4" />
                     {user.name.split(' ')[0]}
                   </Button>
@@ -68,14 +64,14 @@ const Header = () => {
                     <Link to="/dashboard/post-job">Post Job</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
+                  <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ) : (
-            <Button variant="outline" className="hidden md:flex border-[#e6c200] text-[#e6c200] hover:bg-[#e6c200] hover:text-[#0a2463]" asChild>
+            <Button variant="outline" className="hidden md:flex border-primary text-primary hover:bg-primary hover:text-primary-foreground" asChild>
               <Link to="/login">
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
@@ -96,26 +92,26 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 animate-fade-in">
             <nav className="flex flex-col space-y-4 pb-4">
-              <Link to="/" className={hoverColor}>Home</Link>
-              <Link to="/members" className={hoverColor}>Members</Link>
-              <Link to="/jobs" className={hoverColor}>Job Board</Link>
-              <Link to="/developers" className={hoverColor}>Developers</Link>
-              <a href="#news" className={hoverColor}>News</a>
-              <a href="#events" className={hoverColor}>Events</a>
+              <Link to="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+              <Link to="/members" className="text-foreground hover:text-primary transition-colors">Members</Link>
+              <Link to="/jobs" className="text-foreground hover:text-primary transition-colors">Job Board</Link>
+              <Link to="/gallery" className="text-foreground hover:text-primary transition-colors">Gallery</Link>
+              <a href="#news" className="text-foreground hover:text-primary transition-colors">News</a>
+              <a href="#events" className="text-foreground hover:text-primary transition-colors">Events</a>
               
               {user ? (
                 <>
-                  <Link to="/dashboard" className={hoverColor}>Dashboard</Link>
-                  <Link to="/dashboard/profile" className={hoverColor}>Profile</Link>
+                  <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">Dashboard</Link>
+                  <Link to="/dashboard/profile" className="text-foreground hover:text-primary transition-colors">Profile</Link>
                   <button
                     onClick={logout}
-                    className="text-red-500 text-left hover:text-red-400 transition-colors"
+                    className="text-destructive text-left hover:text-destructive/80 transition-colors"
                   >
                     Logout
                   </button>
                 </>
               ) : (
-                <Button variant="outline" className="w-full border-[#e6c200] text-[#e6c200] hover:bg-[#e6c200] hover:text-[#0a2463]" asChild>
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground" asChild>
                   <Link to="/login">
                     <LogIn className="mr-2 h-4 w-4" />
                     Login

@@ -21,6 +21,7 @@ import PostJob from "./pages/PostJob";
 import UserProfile from "./pages/UserProfile";
 import Messenger from "./pages/Messenger";
 import Developers from "./pages/Developers";
+import Gallery from "./pages/Gallery";
 import { useState } from "react";
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/jobs" element={<JobBoard />} />
                 <Route path="/jobs/:id" element={<JobDetail />} />
+                <Route path="/gallery" element={<Gallery />} />
                 <Route path="/developers" element={<Developers />} />
                 
                 {/* Protected routes */}
