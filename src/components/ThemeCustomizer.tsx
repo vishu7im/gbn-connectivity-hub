@@ -13,19 +13,19 @@ const ThemeCustomizer: React.FC = () => {
   const { theme, setTheme, color, setColor, font, setFont } = useTheme();
 
   const colorOptions = [
-    { name: "Blue", value: "blue", primary: "#0a2463", accent: "#3e92cc" },
-    { name: "Green", value: "green", primary: "#2d6a4f", accent: "#40916c" },
-    { name: "Purple", value: "purple", primary: "#5a189a", accent: "#7b2cbf" },
-    { name: "Orange", value: "orange", primary: "#e76f51", accent: "#f4a261" },
-    { name: "Red", value: "red", primary: "#d62828", accent: "#f77f00" },
+    { name: "Blue", value: "blue" as const, primary: "#0a2463", accent: "#3e92cc" },
+    { name: "Green", value: "green" as const, primary: "#2d6a4f", accent: "#40916c" },
+    { name: "Purple", value: "purple" as const, primary: "#5a189a", accent: "#7b2cbf" },
+    { name: "Orange", value: "orange" as const, primary: "#e76f51", accent: "#f4a261" },
+    { name: "Red", value: "red" as const, primary: "#d62828", accent: "#f77f00" },
   ];
 
   const fontOptions = [
-    { name: "System Default", value: "system" },
-    { name: "Inter", value: "inter" },
-    { name: "Poppins", value: "poppins" },
-    { name: "Roboto", value: "roboto" },
-    { name: "Playfair Display", value: "playfair" },
+    { name: "System Default", value: "system" as const },
+    { name: "Inter", value: "inter" as const },
+    { name: "Poppins", value: "poppins" as const },
+    { name: "Roboto", value: "roboto" as const },
+    { name: "Playfair Display", value: "playfair" as const },
   ];
 
   return (

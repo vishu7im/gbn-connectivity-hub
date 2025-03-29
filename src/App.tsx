@@ -20,10 +20,12 @@ import Dashboard from "./pages/Dashboard";
 import PostJob from "./pages/PostJob";
 import UserProfile from "./pages/UserProfile";
 import Messenger from "./pages/Messenger";
+import { useState } from "react";
 
-const queryClient = new QueryClient();
+function App() {
+  // Create QueryClient inside component to ensure it's only created once during component rendering
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -85,6 +87,6 @@ const App = () => {
       </ThemeProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
