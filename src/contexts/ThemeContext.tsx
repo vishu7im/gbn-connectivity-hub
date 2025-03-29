@@ -19,7 +19,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     const savedTheme = localStorage.getItem("theme");
-    return (savedTheme as ThemeMode) || "light";
+    return (savedTheme as ThemeMode) || "dark";
   });
   
   const [color, setColorState] = useState<ColorScheme>(() => {
