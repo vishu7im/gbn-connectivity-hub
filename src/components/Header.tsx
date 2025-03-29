@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { GraduationCap, Menu, X, LogIn, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +16,18 @@ import {
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const bgColor = theme === "dark" ? "bg-background" : "bg-[#0a2463]";
+  const textColor = theme === "dark" ? "text-foreground" : "text-white";
+  const hoverColor = "hover:text-[#e6c200] transition-colors";
+
   return (
-    <header className="bg-[#0a2463] text-white shadow-md sticky top-0 z-50">
+    <header className={`${bgColor} ${textColor} shadow-md sticky top-0 z-50`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
@@ -34,11 +40,12 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="hover:text-[#e6c200] transition-colors">Home</Link>
-            <Link to="/members" className="hover:text-[#e6c200] transition-colors">Members</Link>
-            <Link to="/jobs" className="hover:text-[#e6c200] transition-colors">Job Board</Link>
-            <a href="#news" className="hover:text-[#e6c200] transition-colors">News</a>
-            <a href="#events" className="hover:text-[#e6c200] transition-colors">Events</a>
+            <Link to="/" className={hoverColor}>Home</Link>
+            <Link to="/members" className={hoverColor}>Members</Link>
+            <Link to="/jobs" className={hoverColor}>Job Board</Link>
+            <Link to="/developers" className={hoverColor}>Developers</Link>
+            <a href="#news" className={hoverColor}>News</a>
+            <a href="#events" className={hoverColor}>Events</a>
           </nav>
 
           {user ? (
@@ -79,7 +86,7 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button 
             onClick={toggleMenu}
-            className="md:hidden text-white focus:outline-none"
+            className="md:hidden focus:outline-none"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -89,16 +96,17 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 animate-fade-in">
             <nav className="flex flex-col space-y-4 pb-4">
-              <Link to="/" className="hover:text-[#e6c200] transition-colors">Home</Link>
-              <Link to="/members" className="hover:text-[#e6c200] transition-colors">Members</Link>
-              <Link to="/jobs" className="hover:text-[#e6c200] transition-colors">Job Board</Link>
-              <a href="#news" className="hover:text-[#e6c200] transition-colors">News</a>
-              <a href="#events" className="hover:text-[#e6c200] transition-colors">Events</a>
+              <Link to="/" className={hoverColor}>Home</Link>
+              <Link to="/members" className={hoverColor}>Members</Link>
+              <Link to="/jobs" className={hoverColor}>Job Board</Link>
+              <Link to="/developers" className={hoverColor}>Developers</Link>
+              <a href="#news" className={hoverColor}>News</a>
+              <a href="#events" className={hoverColor}>Events</a>
               
               {user ? (
                 <>
-                  <Link to="/dashboard" className="hover:text-[#e6c200] transition-colors">Dashboard</Link>
-                  <Link to="/dashboard/profile" className="hover:text-[#e6c200] transition-colors">Profile</Link>
+                  <Link to="/dashboard" className={hoverColor}>Dashboard</Link>
+                  <Link to="/dashboard/profile" className={hoverColor}>Profile</Link>
                   <button
                     onClick={logout}
                     className="text-red-500 text-left hover:text-red-400 transition-colors"
