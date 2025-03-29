@@ -17,6 +17,7 @@ import JobDetail from "./pages/JobDetail";
 import Dashboard from "./pages/Dashboard";
 import PostJob from "./pages/PostJob";
 import UserProfile from "./pages/UserProfile";
+import Messenger from "./pages/Messenger";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <PostJob />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/messenger" 
+                element={
+                  <ProtectedRoute>
+                    <Messenger />
                   </ProtectedRoute>
                 } 
               />

@@ -21,13 +21,15 @@ import {
   Calendar 
 } from "lucide-react";
 
-// Import sample job data
+// Import sample job data and components
 import { jobsData } from "@/data/jobsData";
+import PostsFeed from "@/components/PostsFeed";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [activeTab, setActiveTab] = useState("jobs");
   
   if (!user) {
     navigate("/login");
@@ -57,7 +59,7 @@ const Dashboard = () => {
         <div className="bg-[#0a2463] text-white py-8">
           <div className="container mx-auto px-4">
             <h1 className="text-3xl md:text-4xl font-bold">Dashboard</h1>
-            <p className="mt-2 text-gray-200">Manage your alumni profile and job postings</p>
+            <p className="mt-2 text-gray-200">Manage your alumni profile and activities</p>
           </div>
         </div>
         
@@ -97,7 +99,7 @@ const Dashboard = () => {
                           }`}
                         >
                           <Briefcase className="mr-3 h-5 w-5 text-[#0a2463]" />
-                          My Job Postings
+                          Dashboard Home
                         </Link>
                       </li>
                       <li>
@@ -120,6 +122,15 @@ const Dashboard = () => {
                         >
                           <Plus className="mr-3 h-5 w-5 text-[#0a2463]" />
                           Post New Job
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/messenger"
+                          className="flex items-center px-4 py-3 hover:bg-gray-100 transition-colors"
+                        >
+                          <MessageSquare className="mr-3 h-5 w-5 text-[#0a2463]" />
+                          Messages
                         </Link>
                       </li>
                       <li>
@@ -152,8 +163,13 @@ const Dashboard = () => {
             
             {/* Main content */}
             <div className="lg:col-span-3">
-              {location.pathname === "/dashboard" && (
-                <div>
+              <Tabs defaultValue="jobs" onValueChange={setActiveTab} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="jobs">My Job Postings</TabsTrigger>
+                  <TabsTrigger value="posts">My Posts</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="jobs">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">My Job Postings</h2>
                     <Link to="/dashboard/post-job">
@@ -218,8 +234,16 @@ const Dashboard = () => {
                       </CardContent>
                     </Card>
                   )}
-                </div>
-              )}
+                </TabsContent>
+                
+                <TabsContent value="posts">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold">My Posts</h2>
+                  </div>
+                  
+                  <PostsFeed userId={user.id} />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>

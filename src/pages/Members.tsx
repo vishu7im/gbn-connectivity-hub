@@ -10,29 +10,19 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Search, UserRound, GraduationCap, Briefcase, ExternalLink } from "lucide-react";
-
-// Sample alumni data
-const alumniData = [
-  { id: 1, name: "Rajiv Kumar", batch: "2018", department: "Computer Science", currentRole: "Software Engineer", company: "TCS" },
-  { id: 2, name: "Priya Singh", batch: "2019", department: "Electrical Engineering", currentRole: "Electrical Engineer", company: "BHEL" },
-  { id: 3, name: "Amit Sharma", batch: "2017", department: "Mechanical Engineering", currentRole: "Product Manager", company: "Maruti Suzuki" },
-  { id: 4, name: "Neha Gupta", batch: "2020", department: "Civil Engineering", currentRole: "Site Engineer", company: "L&T" },
-  { id: 5, name: "Vikram Patel", batch: "2018", department: "Electronics", currentRole: "Hardware Engineer", company: "Samsung" },
-  { id: 6, name: "Sunita Mishra", batch: "2016", department: "Computer Science", currentRole: "Tech Lead", company: "Infosys" },
-  { id: 7, name: "Arun Joshi", batch: "2019", department: "Mechanical Engineering", currentRole: "Design Engineer", company: "Tata Motors" },
-  { id: 8, name: "Meera Reddy", batch: "2017", department: "Civil Engineering", currentRole: "Project Manager", company: "DLF" },
-  { id: 9, name: "Sanjay Kapoor", batch: "2020", department: "Electrical Engineering", currentRole: "Power Systems Engineer", company: "NTPC" },
-  { id: 10, name: "Anjali Desai", batch: "2018", department: "Electronics", currentRole: "IoT Specialist", company: "Wipro" },
-  { id: 11, name: "Rahul Verma", batch: "2016", department: "Computer Science", currentRole: "Data Scientist", company: "Amazon" },
-  { id: 12, name: "Kavita Malhotra", batch: "2019", department: "Civil Engineering", currentRole: "Structural Engineer", company: "Shapoorji Pallonji" },
-];
+import { Search, UserRound, GraduationCap, Briefcase, ExternalLink, MessageSquare } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PostsFeed from "@/components/PostsFeed";
+import { useAuth } from "@/contexts/AuthContext";
+import { alumniData } from "@/data/alumniData";
 
 const Members = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedBatch, setSelectedBatch] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("directory");
   const itemsPerPage = 5;
 
   // Get unique departments and batches for filters
@@ -70,159 +60,184 @@ const Members = () => {
       <main className="flex-grow">
         <div className="bg-[#0a2463] text-white py-12">
           <div className="container mx-auto px-4">
-            <h1 className="text-3xl md:text-4xl font-bold">Alumni Directory</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">Alumni Community</h1>
             <p className="mt-2 text-gray-200">Connect with fellow graduates from GBN Polytechnic</p>
           </div>
         </div>
         
         <div className="container mx-auto px-4 py-8">
-          <Card className="mb-8">
-            <CardContent className="pt-6">
-              <div className="grid gap-6 md:grid-cols-4">
-                <div className="col-span-2">
-                  <Label htmlFor="search" className="mb-2 block">Search</Label>
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <Input
-                      id="search"
-                      placeholder="Search by name, role or company..."
-                      className="pl-9"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+          <Tabs defaultValue="directory" onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="directory">Alumni Directory</TabsTrigger>
+              <TabsTrigger value="feed">Community Feed</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="directory">
+              <Card className="mb-8">
+                <CardContent className="pt-6">
+                  <div className="grid gap-6 md:grid-cols-4">
+                    <div className="col-span-2">
+                      <Label htmlFor="search" className="mb-2 block">Search</Label>
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                        <Input
+                          id="search"
+                          placeholder="Search by name, role or company..."
+                          className="pl-9"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="department" className="mb-2 block">Department</Label>
+                      <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Departments" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Departments</SelectItem>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="batch" className="mb-2 block">Batch Year</Label>
+                      <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Batches" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Batches</SelectItem>
+                          {batches.map((batch) => (
+                            <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="department" className="mb-2 block">Department</Label>
-                  <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Departments" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Departments</SelectItem>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="batch" className="mb-2 block">Batch Year</Label>
-                  <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Batches" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Batches</SelectItem>
-                      {batches.map((batch) => (
-                        <SelectItem key={batch} value={batch}>{batch}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  
+                  <div className="mt-4 flex justify-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={resetFilters}
+                      className="text-sm"
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="rounded-md border bg-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Batch</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Current Role</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead className="w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentItems.length > 0 ? (
+                      currentItems.map((alumni) => (
+                        <TableRow key={alumni.id} className="hover:bg-slate-100">
+                          <TableCell className="font-medium flex items-center gap-2">
+                            <div className="bg-[#0a2463] text-white p-1 rounded-full">
+                              <UserRound size={20} />
+                            </div>
+                            <Link to={`/members/${alumni.id}`} className="hover:text-[#0a2463] hover:underline">
+                              {alumni.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="flex items-center gap-2">
+                            <GraduationCap size={16} className="text-[#e6c200]" />
+                            {alumni.batch}
+                          </TableCell>
+                          <TableCell>{alumni.department}</TableCell>
+                          <TableCell>{alumni.currentRole}</TableCell>
+                          <TableCell className="flex items-center gap-2">
+                            <Briefcase size={16} className="text-gray-500" />
+                            {alumni.company}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link to={`/members/${alumni.id}`}>
+                                  <ExternalLink size={16} />
+                                  <span className="sr-only">View Profile</span>
+                                </Link>
+                              </Button>
+                              {user && alumni.id !== user.id && (
+                                <Button variant="ghost" size="sm" asChild>
+                                  <Link to={`/messenger?userId=${alumni.id}`}>
+                                    <MessageSquare size={16} />
+                                    <span className="sr-only">Message</span>
+                                  </Link>
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                          <p>No alumni found matching your criteria</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
               
-              <div className="mt-4 flex justify-end">
-                <Button 
-                  variant="outline" 
-                  onClick={resetFilters}
-                  className="text-sm"
-                >
-                  Reset Filters
-                </Button>
+              {filteredAlumni.length > itemsPerPage && (
+                <div className="mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            isActive={currentPage === page}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="feed">
+              <div className="max-w-3xl mx-auto">
+                <PostsFeed />
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="rounded-md border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Batch</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Current Role</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead className="w-[100px]">View Profile</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((alumni) => (
-                    <TableRow key={alumni.id} className="cursor-pointer hover:bg-slate-100">
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <div className="bg-[#0a2463] text-white p-1 rounded-full">
-                          <UserRound size={20} />
-                        </div>
-                        <Link to={`/members/${alumni.id}`} className="hover:text-[#0a2463] hover:underline">
-                          {alumni.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="flex items-center gap-2">
-                        <GraduationCap size={16} className="text-[#e6c200]" />
-                        {alumni.batch}
-                      </TableCell>
-                      <TableCell>{alumni.department}</TableCell>
-                      <TableCell>{alumni.currentRole}</TableCell>
-                      <TableCell className="flex items-center gap-2">
-                        <Briefcase size={16} className="text-gray-500" />
-                        {alumni.company}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/members/${alumni.id}`}>
-                            <ExternalLink size={16} />
-                            <span className="sr-only">View Profile</span>
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      <p>No alumni found matching your criteria</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          
-          {filteredAlumni.length > itemsPerPage && (
-            <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        isActive={currentPage === page}
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                  
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       <Footer />
