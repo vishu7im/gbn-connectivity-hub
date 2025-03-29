@@ -55,10 +55,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, showComments = true }) => {
     : (post.comments.length > 2 ? post.comments.slice(-2) : post.comments);
 
   return (
-    <Card className="mb-6">
+    <Card className="h-full flex flex-col">
       <CardHeader className="p-4 flex flex-row space-y-0 items-center">
         <Avatar className="h-10 w-10 mr-3">
-          <AvatarFallback className="bg-[#0a2463] text-white">
+          <AvatarFallback className="bg-primary text-primary-foreground">
             {getInitials(post.userName)}
           </AvatarFallback>
         </Avatar>
@@ -69,7 +69,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, showComments = true }) => {
           <p className="text-xs text-gray-500">{formatTime(post.createdAt)}</p>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent className="p-4 pt-0 flex-grow">
         <p className="mb-4 whitespace-pre-line">{post.content}</p>
         {post.image && (
           <div className="mt-3 rounded-md overflow-hidden">
@@ -86,7 +86,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, showComments = true }) => {
           <div className="flex items-center space-x-6">
             <button 
               onClick={handleLike}
-              className="flex items-center text-gray-500 hover:text-[#0a2463]"
+              className="flex items-center text-gray-500 hover:text-primary"
             >
               <Heart size={18} className="mr-1" />
               <span>{post.likes}</span>

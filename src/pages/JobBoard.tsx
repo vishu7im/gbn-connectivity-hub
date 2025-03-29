@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Search, Briefcase, Building, MapPin, Clock, Filter, FilterX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import ViewToggle from "@/components/ViewToggle";
 
-// Sample job data
 const jobsData = [
   {
     id: 1,
@@ -122,13 +121,19 @@ const JobBoard = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
+    const savedView = localStorage.getItem("jobsViewMode");
+    return (savedView as "list" | "grid") || "list";
+  });
+  const itemsPerPage = viewMode === "grid" ? 6 : 4;
 
-  // Get unique categories and types for filters
+  useEffect(() => {
+    localStorage.setItem("jobsViewMode", viewMode);
+  }, [viewMode]);
+
   const categories = [...new Set(jobsData.map(job => job.category))];
   const jobTypes = [...new Set(jobsData.map(job => job.type))];
 
-  // Filter jobs based on search and filters
   const filteredJobs = jobsData.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           job.company.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -140,7 +145,6 @@ const JobBoard = () => {
     return matchesSearch && matchesCategory && matchesType;
   });
 
-  // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
@@ -154,32 +158,35 @@ const JobBoard = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+    const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="bg-[#0a2463] text-white py-12">
+        <div className="bg-primary text-primary-foreground py-12">
           <div className="container mx-auto px-4">
             <h1 className="text-3xl md:text-4xl font-bold">Job Opportunities</h1>
-            <p className="mt-2 text-gray-200">Find and post career opportunities for our alumni community</p>
+            <p className="mt-2 text-primary-foreground/80">Find and post career opportunities for our alumni community</p>
           </div>
         </div>
         
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Available Positions</h2>
-            {user?.isAlumni && (
-              <Link to="/dashboard/post-job">
-                <Button>
-                  <Briefcase className="mr-2 h-4 w-4" />
-                  Post a Job
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-4">
+              <ViewToggle view={viewMode} onChange={setViewMode} />
+              {user?.isAlumni && (
+                <Link to="/dashboard/post-job">
+                  <Button>
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    Post a Job
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
           
           <Card className="mb-8">
@@ -240,15 +247,15 @@ const JobBoard = () => {
           </Card>
           
           {currentJobs.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6">
+            <div className={viewMode === "grid" ? "grid-layout" : "grid grid-cols-1 gap-6"}>
               {currentJobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden">
-                  <div className="border-l-4 border-[#0a2463]">
+                <Card key={job.id} className="overflow-hidden h-full">
+                  <div className="border-l-4 border-primary h-full flex flex-col">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle className="text-xl font-bold">
-                            <Link to={`/jobs/${job.id}`} className="text-[#0a2463] hover:underline">
+                            <Link to={`/jobs/${job.id}`} className="text-primary hover:underline">
                               {job.title}
                             </Link>
                           </CardTitle>
@@ -262,7 +269,7 @@ const JobBoard = () => {
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="pb-2">
+                    <CardContent className={`pb-2 ${viewMode === "grid" ? "flex-grow" : ""}`}>
                       <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-gray-500 mb-4">
                         <div className="flex items-center">
                           <MapPin className="mr-1 h-4 w-4" />
@@ -278,7 +285,7 @@ const JobBoard = () => {
                         </div>
                       </div>
                       
-                      <p className="line-clamp-2 text-gray-600">
+                      <p className={`text-gray-600 ${viewMode === "grid" ? "line-clamp-3" : "line-clamp-2"}`}>
                         {job.description}
                       </p>
                       
@@ -286,7 +293,7 @@ const JobBoard = () => {
                         <p className="font-semibold">{job.salary}</p>
                       </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between pt-2">
+                    <CardFooter className="flex justify-between pt-2 mt-auto">
                       <span className="text-sm text-gray-500">
                         Posted by {job.postedBy}
                       </span>
