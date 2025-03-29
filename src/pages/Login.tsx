@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,10 +6,23 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LogIn } from "lucide-react";
 
 const loginSchema = z.object({
@@ -40,7 +52,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen text-primary-foreground flex flex-col">
       <Header />
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-12">
@@ -54,7 +66,10 @@ const Login = () => {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
                       name="email"
@@ -62,7 +77,10 @@ const Login = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="your.email@example.com" {...field} />
+                            <Input
+                              placeholder="your.email@example.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -75,7 +93,11 @@ const Login = () => {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="******" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="******"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -89,12 +111,18 @@ const Login = () => {
                 <div className="mt-4 text-center text-sm">
                   <p>
                     Don&apos;t have an account?{" "}
-                    <Link to="/register" className="text-blue-600 hover:underline">
+                    <Link
+                      to="/register"
+                      className="text-blue-600 hover:underline"
+                    >
                       Register
                     </Link>
                   </p>
                   <p className="mt-2">
-                    <Link to="/members" className="text-gray-600 hover:underline">
+                    <Link
+                      to="/members"
+                      className="text-gray-600 hover:underline"
+                    >
                       Continue as guest
                     </Link>
                   </p>

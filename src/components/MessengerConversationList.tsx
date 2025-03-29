@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,15 +13,15 @@ interface MessengerConversationListProps {
   activeConversationUserId: number | null;
 }
 
-const MessengerConversationList: React.FC<MessengerConversationListProps> = ({ 
+const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
   onSelectConversation,
-  activeConversationUserId
+  activeConversationUserId,
 }) => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAlumni, setFilteredAlumni] = useState<any[]>([]);
-  
+
   useEffect(() => {
     if (user) {
       // Get conversations for current user
@@ -30,37 +29,38 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
       setConversations(userConvs);
     }
   }, [user]);
-  
+
   useEffect(() => {
     if (searchTerm) {
       const filtered = alumniData.filter(
-        alumni => alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-                 alumni.id !== user?.id
+        (alumni) =>
+          alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          alumni.id !== user?.id
       );
       setFilteredAlumni(filtered);
     } else {
       setFilteredAlumni([]);
     }
   }, [searchTerm, user]);
-  
+
   const getOtherParticipant = (conversation: Conversation) => {
     if (!user) return null;
-    const otherUserId = conversation.participants.find(id => id !== user.id);
-    return alumniData.find(a => a.id === otherUserId);
+    const otherUserId = conversation.participants.find((id) => id !== user.id);
+    return alumniData.find((a) => a.id === otherUserId);
   };
-  
+
   const formatTime = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   };
-  
+
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase();
   };
-  
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-3">
@@ -74,13 +74,15 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
           />
         </div>
       </div>
-      
+
       <ScrollArea className="flex-1">
         {/* Search results */}
         {filteredAlumni.length > 0 && (
           <div className="mb-2">
-            <h3 className="px-3 py-2 text-xs font-medium text-gray-500">SEARCH RESULTS</h3>
-            {filteredAlumni.map(alumni => (
+            <h3 className="px-3 py-2 text-xs font-medium text-gray-500">
+              SEARCH RESULTS
+            </h3>
+            {filteredAlumni.map((alumni) => (
               <button
                 key={alumni.id}
                 className="w-full px-3 py-2 hover:bg-gray-100 flex items-center"
@@ -90,35 +92,41 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
                 }}
               >
                 <Avatar className="h-9 w-9 mr-3">
-                  <AvatarFallback className="bg-[#0a2463] text-white text-xs">
+                  <AvatarFallback className="bg-primary text-primary-foreground  text-xs">
                     {getInitials(alumni.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left">
                   <p className="font-medium text-sm">{alumni.name}</p>
-                  <p className="text-xs text-gray-500">{alumni.department} - {alumni.batch}</p>
+                  <p className="text-xs text-gray-500">
+                    {alumni.department} - {alumni.batch}
+                  </p>
                 </div>
               </button>
             ))}
             <div className="border-t my-2"></div>
           </div>
         )}
-        
+
         {/* Conversations list */}
         {searchTerm === "" && (
           <>
-            <h3 className="px-3 py-2 text-xs font-medium text-gray-500">RECENT MESSAGES</h3>
+            <h3 className="px-3 py-2 text-xs font-medium text-gray-500">
+              RECENT MESSAGES
+            </h3>
             {conversations.length > 0 ? (
-              conversations.map(conversation => {
+              conversations.map((conversation) => {
                 const otherUser = getOtherParticipant(conversation);
                 if (!otherUser) return null;
-                
+
                 const isActive = activeConversationUserId === otherUser.id;
-                
+
                 return (
                   <button
                     key={conversation.id}
-                    className={`w-full px-3 py-2 ${isActive ? 'bg-gray-100' : 'hover:bg-gray-100'} flex items-center`}
+                    className={`w-full px-3 py-2 ${
+                      isActive ? "bg-gray-100" : "hover:bg-gray-100"
+                    } flex items-center`}
                     onClick={() => onSelectConversation(otherUser.id)}
                   >
                     <div className="relative">
@@ -136,9 +144,13 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
                     <div className="text-left flex-1 overflow-hidden">
                       <div className="flex justify-between items-center">
                         <p className="font-medium text-sm">{otherUser.name}</p>
-                        <p className="text-xs text-gray-500">{formatTime(conversation.lastMessageTime)}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatTime(conversation.lastMessageTime)}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500 truncate">{conversation.lastMessage}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {conversation.lastMessage}
+                      </p>
                     </div>
                   </button>
                 );

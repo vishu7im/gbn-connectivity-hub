@@ -1,7 +1,11 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,15 +27,15 @@ interface MemberCardProps {
 const MemberCard: React.FC<MemberCardProps> = ({ member, viewMode }) => {
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase();
   };
 
   if (viewMode === "list") {
     return (
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="hover:shadow-md  transition-shadow">
         <CardContent className="p-4 flex items-center">
           <Avatar className="h-14 w-14 mr-4">
             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -42,7 +46,9 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, viewMode }) => {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-medium text-lg">{member.name}</h3>
-                <p className="text-sm text-gray-500">{member.currentRole} at {member.company}</p>
+                <p className="text-sm text-gray-500">
+                  {member.currentRole} at {member.company}
+                </p>
               </div>
               <div className="flex flex-col items-end gap-1.5">
                 <Badge variant="outline" className="font-normal">
@@ -56,13 +62,15 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, viewMode }) => {
             </div>
           </div>
           <Link to={`/members/${member.id}`} className="ml-4">
-            <Button variant="outline" size="sm">View Profile</Button>
+            <Button variant="outline" size="sm">
+              View Profile
+            </Button>
           </Link>
         </CardContent>
       </Card>
     );
   }
-  
+
   return (
     <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
       <CardHeader className="flex flex-col items-center text-center p-6">
@@ -85,7 +93,9 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, viewMode }) => {
       <CardContent className="px-6 pb-0 flex-1 text-center">
         <div className="flex items-center justify-center">
           <Building className="h-4 w-4 mr-1 text-gray-500" />
-          <p className="text-gray-600">{member.currentRole} at {member.company}</p>
+          <p className="text-gray-600">
+            {member.currentRole} at {member.company}
+          </p>
         </div>
       </CardContent>
       <CardFooter className="p-6 pt-4 flex justify-center">

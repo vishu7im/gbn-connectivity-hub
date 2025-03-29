@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,12 +7,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Briefcase, ChevronLeft } from "lucide-react";
 
 const jobSchema = z.object({
@@ -33,7 +52,7 @@ type JobFormValues = z.infer<typeof jobSchema>;
 const PostJob = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   if (!user) {
     navigate("/login");
     return null;
@@ -58,10 +77,10 @@ const PostJob = () => {
     try {
       // In a real app, this would be an API call
       console.log("Job posting data:", values);
-      
+
       // Show success message
       toast.success("Job posted successfully!");
-      
+
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (error) {
@@ -70,35 +89,61 @@ const PostJob = () => {
     }
   };
 
-  const jobTypes = ["Full-time", "Part-time", "Contract", "Internship", "Remote"];
-  const jobCategories = ["Technology", "Engineering", "Management", "Analytics", "Marketing", "Finance", "Education", "Healthcare"];
+  const jobTypes = [
+    "Full-time",
+    "Part-time",
+    "Contract",
+    "Internship",
+    "Remote",
+  ];
+  const jobCategories = [
+    "Technology",
+    "Engineering",
+    "Management",
+    "Analytics",
+    "Marketing",
+    "Finance",
+    "Education",
+    "Healthcare",
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screentext-primary-foreground  flex flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="bg-[#0a2463] text-white py-8">
+        <div className="bg-primary text-primary-foreground py-8">
           <div className="container mx-auto px-4">
-            <Link to="/dashboard" className="inline-flex items-center text-white hover:text-[#e6c200] transition-colors">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center text-white hover:text-[#e6c200] transition-colors"
+            >
               <ChevronLeft size={20} />
               <span>Back to Dashboard</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-bold mt-4">Post a Job Opportunity</h1>
-            <p className="mt-2 text-gray-200">Share job opportunities with the alumni community</p>
+            <h1 className="text-3xl md:text-4xl font-bold mt-4">
+              Post a Job Opportunity
+            </h1>
+            <p className="mt-2 text-gray-200">
+              Share job opportunities with the alumni community
+            </p>
           </div>
         </div>
-        
+
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-3xl mx-auto">
             <CardHeader>
               <CardTitle>Job Details</CardTitle>
               <CardDescription>
-                Enter the details of the job opportunity you want to share with other alumni
+                Enter the details of the job opportunity you want to share with
+                other alumni
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
                   <FormField
                     control={form.control}
                     name="title"
@@ -106,13 +151,16 @@ const PostJob = () => {
                       <FormItem>
                         <FormLabel>Job Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Software Engineer" {...field} />
+                          <Input
+                            placeholder="e.g. Software Engineer"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -127,7 +175,7 @@ const PostJob = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="location"
@@ -142,7 +190,7 @@ const PostJob = () => {
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -150,7 +198,10 @@ const PostJob = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Job Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select job type" />
@@ -168,14 +219,17 @@ const PostJob = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="category"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select category" />
@@ -194,7 +248,7 @@ const PostJob = () => {
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={form.control}
                     name="salary"
@@ -202,13 +256,16 @@ const PostJob = () => {
                       <FormItem>
                         <FormLabel>Salary</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. ₹8,00,000 - ₹12,00,000 per annum" {...field} />
+                          <Input
+                            placeholder="e.g. ₹8,00,000 - ₹12,00,000 per annum"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="description"
@@ -216,7 +273,7 @@ const PostJob = () => {
                       <FormItem>
                         <FormLabel>Job Description</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Describe the job role, responsibilities, and any other relevant information..."
                             rows={6}
                             {...field}
@@ -226,7 +283,7 @@ const PostJob = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="requirements"
@@ -234,7 +291,7 @@ const PostJob = () => {
                       <FormItem>
                         <FormLabel>Requirements</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="List the skills, experience, and qualifications required for this position..."
                             rows={4}
                             {...field}
@@ -247,7 +304,7 @@ const PostJob = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="applicationLink"
@@ -255,22 +312,30 @@ const PostJob = () => {
                       <FormItem>
                         <FormLabel>Application Link</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. https://company.com/careers/job-id" {...field} />
+                          <Input
+                            placeholder="e.g. https://company.com/careers/job-id"
+                            {...field}
+                          />
                         </FormControl>
                         <FormDescription>
-                          Provide a direct URL where applicants can apply for this position
+                          Provide a direct URL where applicants can apply for
+                          this position
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="flex gap-4">
                     <Button type="submit">
                       <Briefcase className="mr-2 h-4 w-4" />
                       Post Job
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate("/dashboard")}
+                    >
                       Cancel
                     </Button>
                   </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,13 +7,33 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { User, ChevronLeft, Upload } from "lucide-react";
 
 const profileSchema = z.object({
@@ -34,7 +53,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 const UserProfile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   if (!user) {
     navigate("/login");
     return null;
@@ -71,7 +90,7 @@ const UserProfile = () => {
     try {
       // In a real app, this would be an API call to update the profile
       console.log("Updated profile data:", values);
-      
+
       // Show success message
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -82,27 +101,34 @@ const UserProfile = () => {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase();
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen text-primary-foreground  flex flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="bg-[#0a2463] text-white py-8">
+        <div className="bg-primary text-primary-foreground  py-8">
           <div className="container mx-auto px-4">
-            <Link to="/dashboard" className="inline-flex items-center text-white hover:text-[#e6c200] transition-colors">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center text-white hover:text-[#e6c200] transition-colors"
+            >
               <ChevronLeft size={20} />
               <span>Back to Dashboard</span>
             </Link>
-            <h1 className="text-3xl md:text-4xl font-bold mt-4">Edit Profile</h1>
-            <p className="mt-2 text-gray-200">Update your alumni profile information</p>
+            <h1 className="text-3xl md:text-4xl font-bold mt-4">
+              Edit Profile
+            </h1>
+            <p className="mt-2 text-gray-200">
+              Update your alumni profile information
+            </p>
           </div>
         </div>
-        
+
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-3xl mx-auto">
             <CardHeader>
@@ -122,14 +148,17 @@ const UserProfile = () => {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
                   <div className="flex justify-center md:justify-end mb-4">
                     <Button type="button" variant="outline" size="sm">
                       <Upload className="mr-2 h-4 w-4" />
                       Change Photo
                     </Button>
                   </div>
-                  
+
                   <FormField
                     control={form.control}
                     name="name"
@@ -143,7 +172,7 @@ const UserProfile = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -160,7 +189,7 @@ const UserProfile = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -169,13 +198,16 @@ const UserProfile = () => {
                         <FormItem>
                           <FormLabel>Current Role</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Software Engineer" {...field} />
+                            <Input
+                              placeholder="e.g. Software Engineer"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="company"
@@ -190,7 +222,7 @@ const UserProfile = () => {
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -199,13 +231,16 @@ const UserProfile = () => {
                         <FormItem>
                           <FormLabel>Location</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Bangalore, India" {...field} />
+                            <Input
+                              placeholder="e.g. Bangalore, India"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="phone"
@@ -213,14 +248,17 @@ const UserProfile = () => {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. +91 9876543210" {...field} />
+                            <Input
+                              placeholder="e.g. +91 9876543210"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={form.control}
                     name="bio"
@@ -228,7 +266,7 @@ const UserProfile = () => {
                       <FormItem>
                         <FormLabel>Bio</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Write a short bio about yourself..."
                             rows={4}
                             {...field}
@@ -238,7 +276,7 @@ const UserProfile = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -247,13 +285,16 @@ const UserProfile = () => {
                         <FormItem>
                           <FormLabel>LinkedIn</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. linkedin.com/in/username" {...field} />
+                            <Input
+                              placeholder="e.g. linkedin.com/in/username"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="facebook"
@@ -261,20 +302,27 @@ const UserProfile = () => {
                         <FormItem>
                           <FormLabel>Facebook</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. facebook.com/username" {...field} />
+                            <Input
+                              placeholder="e.g. facebook.com/username"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <div className="flex gap-4">
                     <Button type="submit">
                       <User className="mr-2 h-4 w-4" />
                       Update Profile
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate("/dashboard")}
+                    >
                       Cancel
                     </Button>
                   </div>
