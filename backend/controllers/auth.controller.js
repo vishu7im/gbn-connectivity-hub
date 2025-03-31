@@ -100,3 +100,63 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error during login' });
   }
 };
+
+// Get pending users for approval
+exports.getPendingUsers = async (req, res) => {
+  try {
+    // Check if the requester is an admin
+    const [admins] = await pool.query(
+      'SELECT * FROM users WHERE id = ? AND is_admin = TRUE', 
+      [req.userId]
+    );
+    
+    if (admins.length === 0) {
+      return res.status(403).json({ message: 'Not authorized to view pending users' });
+    }
+
+    // Get pending users
+    const [pendingUsers] = await pool.query(`
+      SELECT id, name, email, batch, department, created_at
+      FROM users
+      WHERE is_verified = FALSE
+      ORDER BY created_at DESC
+    `);
+
+    res.status(200).json(pendingUsers);
+  } catch (err) {
+    console.error('Error getting pending users:', err);
+    res.status(500).json({ message: 'Failed to get pending users' });
+  }
+};
+
+// Verify user by admin
+exports.verifyUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Check if the requester is an admin
+    const [admins] = await pool.query(
+      'SELECT * FROM users WHERE id = ? AND is_admin = TRUE', 
+      [req.userId]
+    );
+    
+    if (admins.length === 0) {
+      return res.status(403).json({ message: 'Not authorized to verify users' });
+    }
+
+    // Check if user exists
+    const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [userId]);
+    
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update verification status
+    await pool.query('UPDATE users SET is_verified = TRUE WHERE id = ?', [userId]);
+
+    res.status(200).json({ message: 'User verified successfully' });
+  } catch (err) {
+    console.error('Error verifying user:', err);
+    res.status(500).json({ message: 'Failed to verify user' });
+  }
+};

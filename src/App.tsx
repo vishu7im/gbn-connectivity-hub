@@ -23,6 +23,7 @@ import UserProfile from "./pages/UserProfile";
 import Messenger from "./pages/Messenger";
 import Developers from "./pages/Developers";
 import Gallery from "./pages/Gallery";
+import AdminPanel from "./pages/AdminPanel";
 import { useState } from "react";
 
 function App() {
@@ -79,6 +80,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Messenger />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminPanel />
                     </ProtectedRoute>
                   } 
                 />
