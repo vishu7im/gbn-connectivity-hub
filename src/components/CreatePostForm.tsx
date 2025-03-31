@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 
-const CreatePostForm: React.FC = () => {
-  const { user, createPost } = useAuth();
+interface CreatePostFormProps {
+  onPostCreated?: () => void;
+}
+
+const API_URL = "http://localhost:5000/api";
+
+const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
+  const { user } = useAuth();
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,10 +35,40 @@ const CreatePostForm: React.FC = () => {
     if (!content.trim()) return;
     
     setIsSubmitting(true);
-    await createPost(content, image || undefined);
-    setContent("");
-    setImage("");
-    setIsSubmitting(false);
+    
+    try {
+      // Get token from local storage
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
+      // Create post using API
+      await axios.post(
+        `${API_URL}/posts`, 
+        { content, image: image || undefined },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      // Reset form
+      setContent("");
+      setImage("");
+      
+      // Notify parent component
+      if (onPostCreated) {
+        onPostCreated();
+      }
+      
+    } catch (error) {
+      console.error("Error creating post:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // For demo purposes, we'll use a simple input for image URL
