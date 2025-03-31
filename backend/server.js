@@ -10,6 +10,7 @@ const userRoutes = require('./routes/user.routes');
 const galleryRoutes = require('./routes/gallery.routes');
 const newsRoutes = require('./routes/news.routes');
 const eventRoutes = require('./routes/event.routes');
+const adminRoutes = require('./routes/admin.routes');
 const { mysqlConnect } = require('./config/db.config');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root route
 app.get('/', (req, res) => {

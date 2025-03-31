@@ -9,6 +9,7 @@ import UserVerificationTable from '@/components/admin/UserVerificationTable';
 import GalleryManager from '@/components/admin/GalleryManager';
 import NewsManager from '@/components/admin/NewsManager';
 import EventsManager from '@/components/admin/EventsManager';
+import DashboardStats from '@/components/admin/DashboardStats';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +18,7 @@ const API_URL = "http://localhost:5000/api";
 
 const AdminPanel = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("user-verification");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   // Check if user is admin
   const { data: isAdmin, isLoading: checkingAdmin } = useQuery({
@@ -76,12 +77,27 @@ const AdminPanel = () => {
         <h1 className="text-3xl font-bold tracking-tight mb-6">Admin Panel</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-8">
+          <TabsList className="grid grid-cols-5 mb-8">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="user-verification">User Verification</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="news">News</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="dashboard" className="mt-0">
+            <Card>
+              <CardHeader>
+                <CardTitle>Dashboard</CardTitle>
+                <CardDescription>
+                  Overview of the alumni portal statistics and activities.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DashboardStats />
+              </CardContent>
+            </Card>
+          </TabsContent>
           
           <TabsContent value="user-verification" className="mt-0">
             <Card>

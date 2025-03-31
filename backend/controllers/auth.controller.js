@@ -64,6 +64,48 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
+    // Special case for admin login
+    if (email === 'admin' && password === '12345678') {
+      // Check if admin exists in database, if not create it
+      const [admins] = await pool.query('SELECT * FROM users WHERE email = "admin@admin.com"');
+      
+      let adminId;
+      
+      if (admins.length === 0) {
+        // Create admin user if it doesn't exist
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('12345678', salt);
+        
+        const [result] = await pool.query(
+          'INSERT INTO users (name, email, password, is_admin, is_verified) VALUES (?, ?, ?, TRUE, TRUE)',
+          ['Admin', 'admin@admin.com', hashedPassword]
+        );
+        
+        adminId = result.insertId;
+      } else {
+        adminId = admins[0].id;
+      }
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: adminId },
+        process.env.JWT_SECRET,
+        { expiresIn: '30d' }
+      );
+      
+      return res.status(200).json({
+        message: 'Admin login successful',
+        token,
+        user: {
+          id: adminId,
+          name: 'Admin',
+          email: 'admin@admin.com',
+          is_admin: true,
+          is_verified: true
+        }
+      });
+    }
+
     // Find user
     const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
     

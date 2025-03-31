@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const galleryController = require('../controllers/gallery.controller');
-const { verifyToken } = require('../middleware/auth.middleware');
+const { verifyToken, verifyAdmin } = require('../middleware/auth.middleware');
 const multer = require('multer');
 const path = require('path');
 
@@ -28,13 +28,13 @@ const upload = multer({
   }
 });
 
-// Get all gallery images
+// Get all gallery images (with pagination)
 router.get('/', galleryController.getAllImages);
 
 // Upload a new image (admin only)
-router.post('/', verifyToken, upload.single('image'), galleryController.uploadImage);
+router.post('/', verifyToken, verifyAdmin, upload.single('image'), galleryController.uploadImage);
 
 // Delete an image (admin only)
-router.delete('/:id', verifyToken, galleryController.deleteImage);
+router.delete('/:id', verifyToken, verifyAdmin, galleryController.deleteImage);
 
 module.exports = router;

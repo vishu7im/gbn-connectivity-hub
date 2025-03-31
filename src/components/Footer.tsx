@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import {
@@ -9,6 +10,7 @@ import {
   Twitter,
   Linkedin,
   Instagram,
+  Shield,
 } from "lucide-react";
 
 const Footer = () => {
@@ -144,6 +146,14 @@ const Footer = () => {
               </span>
             </p>
             <div className="flex gap-4 text-sm">
+              <Link
+                to="/login"
+                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Shield className="h-3 w-3" />
+                <span>Admin Login</span>
+                <span className="text-xs text-muted-foreground"> (user: admin, pwd: 12345678)</span>
+              </Link>
               <a
                 href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -155,12 +165,6 @@ const Footer = () => {
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Cookie Policy
               </a>
             </div>
           </div>
