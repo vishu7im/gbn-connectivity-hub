@@ -18,7 +18,7 @@ const Posts = () => {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="bg-primary py-8">
+        <div className="bg-primary py-8 shadow-md">
           <div className="container mx-auto px-4">
             <h1 className="text-3xl md:text-4xl font-bold text-primary-foreground">Alumni Posts</h1>
             <p className="mt-2 text-primary-foreground/80">

@@ -60,9 +60,9 @@ const PostsFeed: React.FC<PostsFeedProps> = ({ userId, viewMode: propViewMode })
           ))}
         </div>
       ) : (
-        <div className="text-center p-6 bg-gray-100 rounded-lg">
+        <div className="text-center p-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
           <h3 className="font-medium text-lg">No posts yet</h3>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             {userId ? "This user hasn't posted anything yet." : "Be the first to post!"}
           </p>
         </div>

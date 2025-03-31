@@ -42,11 +42,11 @@ const CreatePostForm: React.FC = () => {
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 shadow-medium dark:shadow-soft">
       <form onSubmit={handleSubmit}>
         <CardContent className="p-4">
           <div className="flex items-start">
-            <Avatar className="h-10 w-10 mr-3">
+            <Avatar className="h-10 w-10 mr-3 shadow-soft">
               <AvatarFallback className="bg-[#0a2463] text-white">
                 {getInitials(user.name)}
               </AvatarFallback>
@@ -55,7 +55,7 @@ const CreatePostForm: React.FC = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Share something with the alumni community..."
-              className="flex-1 resize-none"
+              className="flex-1 resize-none shadow-inner-light"
               rows={3}
               disabled={isSubmitting}
             />
@@ -66,11 +66,11 @@ const CreatePostForm: React.FC = () => {
               <img 
                 src={image} 
                 alt="Post preview" 
-                className="w-full h-auto max-h-[200px] object-cover rounded-md"
+                className="w-full h-auto max-h-[200px] object-cover rounded-md shadow-medium"
               />
               <button
                 type="button"
-                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
+                className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-full p-1 shadow-md hover:shadow-lg transition-shadow"
                 onClick={() => setImage("")}
               >
                 ✕
@@ -84,6 +84,7 @@ const CreatePostForm: React.FC = () => {
             variant="outline"
             onClick={handleImageUrl}
             disabled={isSubmitting}
+            className="button-shadow"
           >
             <Image size={18} className="mr-1" />
             Add Image
@@ -91,6 +92,7 @@ const CreatePostForm: React.FC = () => {
           <Button 
             type="submit" 
             disabled={!content.trim() || isSubmitting}
+            className="button-shadow"
           >
             <Send size={18} className="mr-1" />
             Post
