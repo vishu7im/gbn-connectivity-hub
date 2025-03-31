@@ -38,6 +38,7 @@ const Header = () => {
           <nav className="hidden md:flex space-x-6">
             <Link to="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
             <Link to="/members" className="text-foreground hover:text-primary transition-colors">Members</Link>
+            <Link to="/posts" className="text-foreground hover:text-primary transition-colors">Posts</Link>
             <Link to="/jobs" className="text-foreground hover:text-primary transition-colors">Job Board</Link>
             <Link to="/gallery" className="text-foreground hover:text-primary transition-colors">Gallery</Link>
             <a href="#news" className="text-foreground hover:text-primary transition-colors">News</a>
@@ -94,6 +95,7 @@ const Header = () => {
             <nav className="flex flex-col space-y-4 pb-4">
               <Link to="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
               <Link to="/members" className="text-foreground hover:text-primary transition-colors">Members</Link>
+              <Link to="/posts" className="text-foreground hover:text-primary transition-colors">Posts</Link>
               <Link to="/jobs" className="text-foreground hover:text-primary transition-colors">Job Board</Link>
               <Link to="/gallery" className="text-foreground hover:text-primary transition-colors">Gallery</Link>
               <a href="#news" className="text-foreground hover:text-primary transition-colors">News</a>

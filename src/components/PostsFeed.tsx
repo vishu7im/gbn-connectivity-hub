@@ -8,15 +8,25 @@ import ViewToggle from "@/components/ViewToggle";
 
 interface PostsFeedProps {
   userId?: number; // Optional: if provided, only show posts from this user
+  viewMode?: "list" | "grid"; // Optional: specify the view mode
 }
 
-const PostsFeed: React.FC<PostsFeedProps> = ({ userId }) => {
+const PostsFeed: React.FC<PostsFeedProps> = ({ userId, viewMode: propViewMode }) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState(postsData);
   const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
+    // If a viewMode prop is provided, use it, otherwise check localStorage
+    if (propViewMode) return propViewMode;
     const savedView = localStorage.getItem("postsViewMode");
     return (savedView as "list" | "grid") || "list";
   });
+
+  // Update viewMode when propViewMode changes
+  useEffect(() => {
+    if (propViewMode) {
+      setViewMode(propViewMode);
+    }
+  }, [propViewMode]);
 
   useEffect(() => {
     // Filter posts if userId is provided
@@ -35,12 +45,16 @@ const PostsFeed: React.FC<PostsFeedProps> = ({ userId }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        {user && !userId && <CreatePostForm />}
-        <ViewToggle view={viewMode} onChange={setViewMode} />
+        {user && !userId && !propViewMode && (
+          <>
+            <CreatePostForm />
+            <ViewToggle view={viewMode} onChange={setViewMode} />
+          </>
+        )}
       </div>
       
       {posts.length > 0 ? (
-        <div className={viewMode === "grid" ? "grid-layout" : "space-y-6"}>
+        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-6"}>
           {posts.map(post => (
             <PostCard key={post.id} post={post} showComments={viewMode === "list"} />
           ))}

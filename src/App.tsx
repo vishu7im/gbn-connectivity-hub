@@ -11,6 +11,7 @@ import ThemeCustomizer from "@/components/ThemeCustomizer";
 import Index from "./pages/Index";
 import Members from "./pages/Members";
 import MemberView from "./pages/MemberView";
+import Posts from "./pages/Posts";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/members" element={<Members />} />
                 <Route path="/members/:id" element={<MemberView />} />
+                <Route path="/posts" element={<Posts />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/jobs" element={<JobBoard />} />
