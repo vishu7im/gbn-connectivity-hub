@@ -1,173 +1,43 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
-import {
-  GraduationCap,
-  Phone,
-  Mail,
-  MapPin,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-  Shield,
-} from "lucide-react";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-background border-t text-foreground pt-12 pb-6">
+    <footer className="bg-gray-100 dark:bg-gray-900 pt-10 pb-6 border-t border-gray-200 dark:border-gray-800 shadow-inner">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <GraduationCap className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-bold">GBN Polytechnic</h3>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Empowering students with knowledge and skills since 1985. Our
-              alumni network continues to grow and make an impact globally.
+            <h3 className="text-lg font-semibold mb-4">GBN Alumni Association</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              A registered body of the Alumni members of GBN Govt. Polytechnic Nilokheri where you connect with fellow members and experience the growing spirit of our institute.
             </p>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Facebook size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Twitter size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Linkedin size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Instagram size={20} />
-              </a>
-            </div>
           </div>
-
+          
           <div>
-            <h3 className="text-lg font-bold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="#news"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  News & Updates
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#events"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Events
-                </a>
-              </li>
-              <li>
-                <Link
-                  to="/members"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Alumni Directory
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/gallery"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Gallery
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Donate
-                </a>
-              </li>
+              <li><Link to="/" className="text-gray-600 dark:text-gray-400 hover:text-primary">Home</Link></li>
+              <li><Link to="/members" className="text-gray-600 dark:text-gray-400 hover:text-primary">Alumni</Link></li>
+              <li><Link to="/jobs" className="text-gray-600 dark:text-gray-400 hover:text-primary">Job Board</Link></li>
+              <li><Link to="/gallery" className="text-gray-600 dark:text-gray-400 hover:text-primary">Gallery</Link></li>
+              <li><Link to="/posts" className="text-gray-600 dark:text-gray-400 hover:text-primary">Posts</Link></li>
+              <li><Link to="/admin" className="text-gray-600 dark:text-gray-400 hover:text-primary">Admin Panel</Link></li>
             </ul>
           </div>
-
+          
           <div>
-            <h3 className="text-lg font-bold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                <span className="text-muted-foreground">
-                  123 Education Street, Knowledge Park,
-                  <br /> New Delhi - 110001
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">+91 1234567890</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">
-                  alumni@gbnpolytechnic.edu.in
-                </span>
-              </li>
+            <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+            <ul className="space-y-2 text-gray-600 dark:text-gray-400">
+              <li>Phone: +91-1745-246002</li>
+              <li>Email: gbn.alumni.nilokheri@gmail.com</li>
             </ul>
           </div>
         </div>
-
-        <div className="border-t border-border pt-6 mt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} GBN Polytechnic Alumni Association.
-              All rights reserved.
-              <span className="ml-2">
-                Developed with ♥ by{" "}
-                <Link to="/developers" className="text-primary hover:underline">
-                  Vishal
-                </Link>
-              </span>
-            </p>
-            <div className="flex gap-4 text-sm">
-              <Link
-                to="/login"
-                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Shield className="h-3 w-3" />
-                <span>Admin Login</span>
-                <span className="text-xs text-muted-foreground"> (user: admin, pwd: 12345678)</span>
-              </Link>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Terms of Service
-              </a>
-            </div>
-          </div>
+        
+        <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>© {new Date().getFullYear()} GBN Alumni Association. All rights reserved.</p>
+          <p className="mt-2">Created with ❤️ by Vishal Munday (CSE)</p>
         </div>
       </div>
     </footer>

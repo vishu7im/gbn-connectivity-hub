@@ -1,204 +1,238 @@
 
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/db.config');
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
-// Register a new user
+// Register new user
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, batch, department } = req.body;
-
-    // Validate input
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please provide name, email and password' });
-    }
-
-    // Check if user already exists
-    const [existingUsers] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const { name, email, password, batch, department, rollNumber, graduation } = req.body;
     
-    if (existingUsers.length > 0) {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const [result] = await pool.query(
-      'INSERT INTO users (name, email, password, batch, department, is_verified) VALUES (?, ?, ?, ?, ?, FALSE)',
-      [name, email, hashedPassword, batch || null, department || null]
-    );
-
+    
+    // Create new user
+    const user = new User({
+      name,
+      email,
+      password,
+      batch,
+      department,
+      rollNumber,
+      graduation,
+      verificationStatus: 'pending'
+    });
+    
+    await user.save();
+    
     // Generate JWT token
     const token = jwt.sign(
-      { id: result.insertId },
-      process.env.JWT_SECRET,
+      { id: user._id },
+      process.env.JWT_SECRET || '65072d0281127af6a924e65d',
       { expiresIn: '30d' }
     );
-
-    // Get user data without password
-    const [userData] = await pool.query(
-      'SELECT id, name, email, batch, department, is_alumni, is_verified FROM users WHERE id = ?',
-      [result.insertId]
-    );
-
+    
+    // Return user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
     res.status(201).json({
-      message: 'Registration successful',
+      message: 'Registration successful! Your account is pending verification.',
       token,
-      user: userData[0]
+      user: userResponse
     });
-  } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ message: 'Server error during registration' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Login
+// Login user
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
-    }
-
-    // Special case for admin login
+    
+    // Check for admin login
     if (email === 'admin' && password === '12345678') {
-      // Check if admin exists in database, if not create it
-      const [admins] = await pool.query('SELECT * FROM users WHERE email = "admin@admin.com"');
+      // Check if admin exists, if not create one
+      let admin = await User.findOne({ email: 'admin@gbnpolytechnic.ac.in' });
       
-      let adminId;
-      
-      if (admins.length === 0) {
-        // Create admin user if it doesn't exist
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('12345678', salt);
+      if (!admin) {
+        // Create admin user
+        const hashedPassword = await bcrypt.hash('12345678', 10);
+        admin = new User({
+          name: 'Admin',
+          email: 'admin@gbnpolytechnic.ac.in',
+          password: hashedPassword,
+          isAdmin: true,
+          isVerified: true,
+          verificationStatus: 'approved'
+        });
         
-        const [result] = await pool.query(
-          'INSERT INTO users (name, email, password, is_admin, is_verified) VALUES (?, ?, ?, TRUE, TRUE)',
-          ['Admin', 'admin@admin.com', hashedPassword]
-        );
-        
-        adminId = result.insertId;
-      } else {
-        adminId = admins[0].id;
+        await admin.save();
       }
       
       // Generate JWT token
       const token = jwt.sign(
-        { id: adminId },
-        process.env.JWT_SECRET,
+        { id: admin._id },
+        process.env.JWT_SECRET || '65072d0281127af6a924e65d',
         { expiresIn: '30d' }
       );
+      
+      // Update last login
+      admin.lastLogin = new Date();
+      await admin.save();
+      
+      // Return admin without password
+      const adminResponse = admin.toObject();
+      delete adminResponse.password;
       
       return res.status(200).json({
         message: 'Admin login successful',
         token,
-        user: {
-          id: adminId,
-          name: 'Admin',
-          email: 'admin@admin.com',
-          is_admin: true,
-          is_verified: true
-        }
+        user: adminResponse
       });
     }
-
-    // Find user
-    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
     
-    if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+    // Regular user login
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
-
-    const user = users[0];
-
+    
     // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.comparePassword(password);
     
     if (!isPasswordValid) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
-
+    
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
+      { id: user._id },
+      process.env.JWT_SECRET || '65072d0281127af6a924e65d',
       { expiresIn: '30d' }
     );
-
-    // Remove password from user object
-    const { password: _, ...userWithoutPassword } = user;
-
+    
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+    
+    // Return user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
     res.status(200).json({
       message: 'Login successful',
       token,
-      user: userWithoutPassword
+      user: userResponse
     });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error during login' });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Get pending users for approval
-exports.getPendingUsers = async (req, res) => {
+// Get current user
+exports.getCurrentUser = async (req, res) => {
   try {
-    // Check if the requester is an admin
-    const [admins] = await pool.query(
-      'SELECT * FROM users WHERE id = ? AND is_admin = TRUE', 
-      [req.userId]
-    );
+    const user = await User.findById(req.userId).select('-password');
     
-    if (admins.length === 0) {
-      return res.status(403).json({ message: 'Not authorized to view pending users' });
-    }
-
-    // Get pending users
-    const [pendingUsers] = await pool.query(`
-      SELECT id, name, email, batch, department, created_at
-      FROM users
-      WHERE is_verified = FALSE
-      ORDER BY created_at DESC
-    `);
-
-    res.status(200).json(pendingUsers);
-  } catch (err) {
-    console.error('Error getting pending users:', err);
-    res.status(500).json({ message: 'Failed to get pending users' });
-  }
-};
-
-// Verify user by admin
-exports.verifyUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    
-    // Check if the requester is an admin
-    const [admins] = await pool.query(
-      'SELECT * FROM users WHERE id = ? AND is_admin = TRUE', 
-      [req.userId]
-    );
-    
-    if (admins.length === 0) {
-      return res.status(403).json({ message: 'Not authorized to verify users' });
-    }
-
-    // Check if user exists
-    const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [userId]);
-    
-    if (users.length === 0) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-    // Update verification status
-    await pool.query('UPDATE users SET is_verified = TRUE WHERE id = ?', [userId]);
+// Get pending users (for admin)
+exports.getPendingUsers = async (req, res) => {
+  try {
+    const pendingUsers = await User.find({ verificationStatus: 'pending' })
+      .select('name email batch department createdAt')
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json(pendingUsers);
+  } catch (error) {
+    console.error('Get pending users error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-    res.status(200).json({ message: 'User verified successfully' });
-  } catch (err) {
-    console.error('Error verifying user:', err);
-    res.status(500).json({ message: 'Failed to verify user' });
+// Update user profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { 
+      name, currentRole, company, location, 
+      phone, bio, linkedin, facebook, twitter 
+    } = req.body;
+    
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Update fields
+    if (name) user.name = name;
+    if (currentRole) user.currentRole = currentRole;
+    if (company) user.company = company;
+    if (location) user.location = location;
+    if (phone) user.phone = phone;
+    if (bio) user.bio = bio;
+    if (linkedin) user.linkedin = linkedin;
+    if (facebook) user.facebook = facebook;
+    if (twitter) user.twitter = twitter;
+    
+    await user.save();
+    
+    // Return updated user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update password
+exports.updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+    
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Update password error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

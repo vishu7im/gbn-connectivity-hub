@@ -4,16 +4,22 @@ const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { verifyToken, verifyAdmin } = require('../middleware/auth.middleware');
 
-// Register a new user
+// Register new user
 router.post('/register', authController.register);
 
-// Login
+// Login user
 router.post('/login', authController.login);
 
-// Get pending users for approval
+// Get current user
+router.get('/me', verifyToken, authController.getCurrentUser);
+
+// Get pending users (admin only)
 router.get('/pending', verifyToken, verifyAdmin, authController.getPendingUsers);
 
-// Verify user by admin
-router.put('/verify/:userId', verifyToken, verifyAdmin, authController.verifyUser);
+// Update user profile
+router.put('/profile', verifyToken, authController.updateProfile);
+
+// Update password
+router.put('/password', verifyToken, authController.updatePassword);
 
 module.exports = router;
