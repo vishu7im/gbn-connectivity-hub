@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -28,7 +29,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, showComments = true }) => {
 
   const handleLike = async () => {
     if (!user) return;
-    await likePost(post.id);
+    // Convert number id to string if needed
+    const postId = typeof post.id === 'number' ? post.id.toString() : post.id;
+    await likePost(postId);
   };
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -36,7 +39,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, showComments = true }) => {
     if (!user || !comment.trim()) return;
 
     setIsSubmitting(true);
-    await addComment(post.id, comment.trim());
+    // Convert number id to string if needed
+    const postId = typeof post.id === 'number' ? post.id.toString() : post.id;
+    await addComment(postId, comment.trim());
     setComment("");
     setIsSubmitting(false);
   };

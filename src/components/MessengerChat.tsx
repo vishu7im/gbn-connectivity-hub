@@ -29,17 +29,18 @@ const MessengerChat: React.FC<MessengerChatProps> = ({ recipientId }) => {
     
     if (!user || !recipientId) return;
     
-    // Get conversation messages
-    const conversationMessages = getConversationMessages(user.id, recipientId);
+    // Get conversation messages - convert user.id to number if it's a string
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const conversationMessages = getConversationMessages(userId, recipientId);
     setMessages(conversationMessages);
     
     // Mark messages as read
-    const conversationKey = getConversationKey(user.id, recipientId);
+    const conversationKey = getConversationKey(userId, recipientId);
     markMessagesAsRead(conversationKey);
     
     // Set up interval to check for new messages (simulating real-time)
     const interval = setInterval(() => {
-      const updatedMessages = getConversationMessages(user.id, recipientId);
+      const updatedMessages = getConversationMessages(userId, recipientId);
       if (updatedMessages.length !== messages.length) {
         setMessages(updatedMessages);
         markMessagesAsRead(conversationKey);
@@ -64,7 +65,8 @@ const MessengerChat: React.FC<MessengerChatProps> = ({ recipientId }) => {
     await sendMessage(recipientId, messageText.trim());
     
     // Update local messages
-    const updatedMessages = getConversationMessages(user.id, recipientId);
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const updatedMessages = getConversationMessages(userId, recipientId);
     setMessages(updatedMessages);
     
     setMessageText("");
@@ -97,12 +99,12 @@ const MessengerChat: React.FC<MessengerChatProps> = ({ recipientId }) => {
       <div className="border-b p-3 flex items-center">
         <Avatar className="h-10 w-10 mr-3">
           <AvatarFallback className="bg-[#0a2463] text-white">
-            {getInitials(recipient.name)}
+            {getInitials(recipient?.name || "")}
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium">{recipient.name}</p>
-          <p className="text-xs text-gray-500">{recipient.department} - {recipient.batch}</p>
+          <p className="font-medium">{recipient?.name}</p>
+          <p className="text-xs text-gray-500">{recipient?.department} - {recipient?.batch}</p>
         </div>
       </div>
       
@@ -166,6 +168,15 @@ const MessengerChat: React.FC<MessengerChatProps> = ({ recipientId }) => {
       </form>
     </div>
   );
+};
+
+// Helper function moved from inside component
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase();
 };
 
 export default MessengerChat;

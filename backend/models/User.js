@@ -115,5 +115,22 @@ UserSchema.methods.comparePassword = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
 
+// Virtual to add 'id' property that maps to _id
+UserSchema.virtual('id').get(function() {
+  return this._id.toString();
+});
+
+// Configure toJSON method to include virtuals
+UserSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    delete ret.password; // Don't expose password
+    return ret;
+  }
+});
+
 const User = mongoose.model('User', UserSchema);
 module.exports = User;

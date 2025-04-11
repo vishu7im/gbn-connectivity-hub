@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -7,6 +6,7 @@ const API_URL = "http://localhost:5000/api";
 
 interface User {
   _id: string;
+  id: string; // Added id field that maps to _id from MongoDB
   name: string;
   email: string;
   isAdmin: boolean;
@@ -19,6 +19,13 @@ interface User {
   company?: string;
   location?: string;
   profilePicture?: string;
+  phone?: string; // Added missing fields
+  bio?: string;
+  linkedin?: string;
+  facebook?: string;
+  twitter?: string;
+  createdAt?: Date | string;
+  lastLogin?: Date | string;
 }
 
 interface AuthContextProps {
@@ -31,6 +38,8 @@ interface AuthContextProps {
   createPost: (content: string, image?: string) => Promise<any>;
   addComment: (postId: string, content: string) => Promise<any>;
   likePost: (postId: string) => Promise<boolean>;
+  sendMessage: (recipientId: number, content: string) => Promise<boolean>;
+  markMessagesAsRead: (conversationKey: string) => void;
 }
 
 export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -39,7 +48,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
@@ -66,7 +74,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkLoggedIn();
   }, []);
 
-  // Register new user
   const register = async (name: string, email: string, password: string, batch: string, department: string): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -95,7 +102,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Login user
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -121,14 +127,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Logout user
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
     toast.info("You've been logged out");
   };
 
-  // Update profile
   const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
@@ -154,7 +158,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Create post
   const createPost = async (content: string, image?: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -184,7 +187,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Add comment to post
   const addComment = async (postId: string, content: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -214,7 +216,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Like post
   const likePost = async (postId: string): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
@@ -243,6 +244,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const sendMessage = async (recipientId: number, content: string): Promise<boolean> => {
+    try {
+      console.log(`Sending message to ${recipientId}: ${content}`);
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return true;
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return false;
+    }
+  };
+
+  const markMessagesAsRead = (conversationKey: string): void => {
+    console.log(`Marking conversation ${conversationKey} as read`);
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -253,7 +271,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateProfile,
       createPost,
       addComment,
-      likePost
+      likePost,
+      sendMessage,
+      markMessagesAsRead
     }}>
       {children}
     </AuthContext.Provider>
