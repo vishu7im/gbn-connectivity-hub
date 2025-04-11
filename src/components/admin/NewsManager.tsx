@@ -1,404 +1,460 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { newsAPI, uploadAPI } from "@/services/api";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, Loader2, Edit, Trash2, ImageIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit, FileText, Image, Loader2, Plus, Trash } from "lucide-react";
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface NewsItem {
-  id: number;
+interface News {
+  _id: string;
   title: string;
   content: string;
-  image: string | null;
-  user_id: number;
-  author_name: string;
-  created_at: string;
-  updated_at: string;
+  imageUrl?: string;
+  isImportant: boolean;
+  createdAt: string;
 }
 
-const API_URL = "http://localhost:5000/api";
+interface NewsFormData {
+  title: string;
+  content: string;
+  isImportant: boolean;
+  image?: File | null;
+}
 
 const NewsManager = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [formData, setFormData] = useState<NewsFormData>({
+    title: "",
+    content: "",
+    isImportant: false,
+    image: null,
+  });
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentNewsId, setCurrentNewsId] = useState<number | null>(null);
-  const [deleteInProgress, setDeleteInProgress] = useState<number | null>(null);
 
-  // Get all news
-  const { data: newsItems, isLoading } = useQuery({
-    queryKey: ['newsItems'],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["allNews"],
     queryFn: async () => {
-      const response = await axios.get<NewsItem[]>(`${API_URL}/news`);
+      const response = await newsAPI.getAllNews();
       return response.data;
-    }
+    },
   });
 
-  // Create news mutation
-  const createNewsMutation = useMutation({
-    mutationFn: async () => {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      if (selectedImage) {
-        formData.append('image', selectedImage);
+  const createMutation = useMutation({
+    mutationFn: async (newsData: NewsFormData) => {
+      let imageUrl = null;
+      if (newsData.image) {
+        setIsUploadingImage(true);
+        const uploadResponse = await uploadAPI.uploadImage(newsData.image);
+        imageUrl = uploadResponse.data.imageUrl;
+        setIsUploadingImage(false);
       }
 
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/news`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+      return newsAPI.createNews({
+        title: newsData.title,
+        content: newsData.content,
+        isImportant: newsData.isImportant,
+        imageUrl,
       });
     },
-    onMutate: () => {
-      setIsSubmitting(true);
-    },
     onSuccess: () => {
-      toast.success('News created successfully');
-      queryClient.invalidateQueries({ queryKey: ['newsItems'] });
+      toast.success("News created successfully");
       resetForm();
-      setIsAddDialogOpen(false);
+      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["allNews"] });
     },
-    onError: (error) => {
-      console.error('Error creating news:', error);
-      toast.error('Failed to create news');
+    onError: () => {
+      toast.error("Failed to create news");
     },
-    onSettled: () => {
-      setIsSubmitting(false);
-    }
   });
 
-  // Update news mutation
-  const updateNewsMutation = useMutation({
-    mutationFn: async () => {
-      if (!currentNewsId) return;
-      
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      if (selectedImage) {
-        formData.append('image', selectedImage);
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, newsData }: { id: string; newsData: NewsFormData }) => {
+      let imageUrl = undefined;
+      if (newsData.image) {
+        setIsUploadingImage(true);
+        const uploadResponse = await uploadAPI.uploadImage(newsData.image);
+        imageUrl = uploadResponse.data.imageUrl;
+        setIsUploadingImage(false);
       }
 
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_URL}/news/${currentNewsId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+      return newsAPI.updateNews(id, {
+        title: newsData.title,
+        content: newsData.content,
+        isImportant: newsData.isImportant,
+        imageUrl,
       });
     },
-    onMutate: () => {
-      setIsSubmitting(true);
-    },
     onSuccess: () => {
-      toast.success('News updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['newsItems'] });
+      toast.success("News updated successfully");
       resetForm();
-      setIsEditDialogOpen(false);
+      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["allNews"] });
     },
-    onError: (error) => {
-      console.error('Error updating news:', error);
-      toast.error('Failed to update news');
+    onError: () => {
+      toast.error("Failed to update news");
     },
-    onSettled: () => {
-      setIsSubmitting(false);
-      setCurrentNewsId(null);
-    }
   });
 
-  // Delete news mutation
-  const deleteNewsMutation = useMutation({
-    mutationFn: async (newsId: number) => {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/news/${newsId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    },
-    onMutate: (newsId) => {
-      setDeleteInProgress(newsId);
-    },
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => newsAPI.deleteNews(id),
     onSuccess: () => {
-      toast.success('News deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['newsItems'] });
+      toast.success("News deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["allNews"] });
     },
-    onError: (error) => {
-      console.error('Error deleting news:', error);
-      toast.error('Failed to delete news');
+    onError: () => {
+      toast.error("Failed to delete news");
     },
-    onSettled: () => {
-      setDeleteInProgress(null);
-    }
   });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, isImportant: checked }));
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, image: file }));
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
     }
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !content) {
-      toast.error('Please provide title and content');
-      return;
+    if (isEditMode && selectedNews) {
+      updateMutation.mutate({ id: selectedNews._id, newsData: formData });
+    } else {
+      createMutation.mutate(formData);
     }
-    createNewsMutation.mutate();
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !content) {
-      toast.error('Please provide title and content');
-      return;
-    }
-    updateNewsMutation.mutate();
+  const openEditDialog = (news: News) => {
+    setSelectedNews(news);
+    setFormData({
+      title: news.title,
+      content: news.content,
+      isImportant: news.isImportant,
+      image: null,
+    });
+    setImagePreview(news.imageUrl || null);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
   };
 
-  const openEditDialog = (news: NewsItem) => {
-    setTitle(news.title);
-    setContent(news.content);
-    setCurrentNewsId(news.id);
-    setIsEditDialogOpen(true);
+  const openCreateDialog = () => {
+    resetForm();
+    setIsEditMode(false);
+    setIsDialogOpen(true);
   };
 
   const resetForm = () => {
-    setTitle('');
-    setContent('');
-    setSelectedImage(null);
-    setCurrentNewsId(null);
+    setFormData({
+      title: "",
+      content: "",
+      isImportant: false,
+      image: null,
+    });
+    setImagePreview(null);
+    setSelectedNews(null);
   };
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">News Articles</h2>
-        
-        <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-          setIsAddDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add News
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Add New Article</DialogTitle>
-              <DialogDescription>
-                Create a new news article for alumni.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleCreate}>
-              <div className="space-y-4 py-2">
-                <div className="grid w-full gap-1.5">
-                  <Label htmlFor="title">Title</Label>
-                  <Input 
-                    id="title" 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)} 
-                    required
-                  />
-                </div>
-                
-                <div className="grid w-full gap-1.5">
-                  <Label htmlFor="content">Content</Label>
-                  <Textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={8}
-                    required
-                  />
-                </div>
-                
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="image">Image (Optional)</Label>
-                  <Input 
-                    id="image" 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </div>
-              </div>
-              
-              <DialogFooter className="mt-4">
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    'Publish News'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+
+  if (isLoading) {
+    return <NewsManagerLoading />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+        <h3 className="font-medium">Error loading news</h3>
+        <p className="text-sm">Please try refreshing the page.</p>
       </div>
-      
-      {/* Edit News Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
-        setIsEditDialogOpen(open);
-        if (!open) resetForm();
-      }}>
-        <DialogContent className="max-w-2xl">
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Manage News</h2>
+        <Button onClick={openCreateDialog}>
+          <Plus className="h-4 w-4 mr-2" /> Add News
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {data.length === 0 ? (
+          <div className="col-span-full text-center py-10">
+            <p className="text-muted-foreground">No news articles found</p>
+            <Button className="mt-4" onClick={openCreateDialog}>
+              <Plus className="h-4 w-4 mr-2" /> Create First News
+            </Button>
+          </div>
+        ) : (
+          data.map((news: News) => (
+            <Card key={news._id}>
+              <CardHeader>
+                <div className="flex justify-between">
+                  <div>
+                    <CardTitle>{news.title}</CardTitle>
+                    <CardDescription>
+                      {format(new Date(news.createdAt), "MMMM d, yyyy")}
+                      {news.isImportant && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                          Important
+                        </span>
+                      )}
+                    </CardDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => openEditDialog(news)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="outline" className="text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete News</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this news article? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground"
+                            onClick={() => handleDelete(news._id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  {news.imageUrl && (
+                    <img
+                      src={news.imageUrl}
+                      alt={news.title}
+                      className="w-full h-40 object-cover rounded-md mb-4"
+                    />
+                  )}
+                  <p className="text-muted-foreground line-clamp-3">
+                    {news.content}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit News Article</DialogTitle>
+            <DialogTitle>{isEditMode ? "Edit News" : "Add News"}</DialogTitle>
             <DialogDescription>
-              Update the news article details.
+              {isEditMode
+                ? "Update the news information below"
+                : "Fill in the details to create a new news article"}
             </DialogDescription>
           </DialogHeader>
-          
-          <form onSubmit={handleUpdate}>
+          <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-2">
-              <div className="grid w-full gap-1.5">
-                <Label htmlFor="edit-title">Title</Label>
-                <Input 
-                  id="edit-title" 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)} 
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
                   required
                 />
               </div>
-              
-              <div className="grid w-full gap-1.5">
-                <Label htmlFor="edit-content">Content</Label>
+              <div className="space-y-2">
+                <Label htmlFor="content">Content</Label>
                 <Textarea
-                  id="edit-content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={8}
+                  id="content"
+                  name="content"
+                  value={formData.content}
+                  onChange={handleChange}
+                  className="min-h-[150px]"
                   required
                 />
               </div>
-              
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="edit-image">Replace Image (Optional)</Label>
-                <Input 
-                  id="edit-image" 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleImageChange}
+              <div className="space-y-2">
+                <Label htmlFor="image">Image</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="flex-1"
+                  />
+                  {imagePreview && (
+                    <div className="relative w-16 h-16">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isImportant"
+                  checked={formData.isImportant}
+                  onCheckedChange={handleCheckboxChange}
                 />
+                <Label htmlFor="isImportant" className="cursor-pointer">
+                  Mark as important
+                </Label>
               </div>
             </div>
-            
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploadingImage}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
+              <Button
+                type="submit"
+                disabled={
+                  createMutation.isPending ||
+                  updateMutation.isPending ||
+                  isUploadingImage ||
+                  !formData.title ||
+                  !formData.content
+                }
+              >
+                {(createMutation.isPending || updateMutation.isPending || isUploadingImage) ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isUploadingImage
+                      ? "Uploading Image..."
+                      : isEditMode
+                      ? "Updating..."
+                      : "Creating..."}
                   </>
+                ) : isEditMode ? (
+                  "Update News"
                 ) : (
-                  'Update News'
+                  "Create News"
                 )}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-      
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : !newsItems || newsItems.length === 0 ? (
-        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-8 text-center">
-          <FileText className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-          <h3 className="text-lg font-medium">No news articles</h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 mb-4">
-            Add news articles to keep alumni informed.
-          </p>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add First Article
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {newsItems.map((news) => (
-            <Card key={news.id} className="overflow-hidden">
-              <div className="grid md:grid-cols-3 gap-0">
-                {news.image && (
-                  <div className="md:col-span-1 h-48 md:h-full">
-                    <img
-                      src={`${API_URL}${news.image}`}
-                      alt={news.title}
-                      className="w-full h-full object-cover"
-                    />
+    </div>
+  );
+};
+
+const NewsManagerLoading = () => {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-7 w-44" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Array(4)
+          .fill(0)
+          .map((_, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <div className="flex justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-32" />
                   </div>
-                )}
-                <div className={`${news.image ? 'md:col-span-2' : 'md:col-span-3'}`}>
-                  <CardHeader>
-                    <CardTitle>{news.title}</CardTitle>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <ScrollArea className="h-24">
-                      <p className="text-sm">{news.content}</p>
-                    </ScrollArea>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                      Published by {news.author_name} on {format(new Date(news.created_at), 'MMM dd, yyyy')}
-                    </p>
-                  </CardContent>
-                  
-                  <CardFooter className="flex justify-end space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(news)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteNewsMutation.mutate(news.id)}
-                      disabled={deleteInProgress === news.id}
-                    >
-                      {deleteInProgress === news.id ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <Trash className="h-4 w-4 mr-1" />
-                      )}
-                      Delete
-                    </Button>
-                  </CardFooter>
+                  <div className="flex space-x-2">
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                  </div>
                 </div>
-              </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-40 w-full mb-4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              </CardContent>
             </Card>
           ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,94 +1,122 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { toast } from 'sonner';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminAPI } from "@/services/api";
+import { toast } from "sonner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, User } from "lucide-react";
-import { format } from 'date-fns';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Check, X, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface PendingUser {
-  id: number;
+interface User {
+  _id: string;
   name: string;
   email: string;
   batch: string;
   department: string;
-  created_at: string;
+  createdAt: string;
 }
 
-const API_URL = "http://localhost:5000/api";
-
 const UserVerificationTable = () => {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isRejectionOpen, setIsRejectionOpen] = useState(false);
+  const [rejectionRemarks, setRejectionRemarks] = useState("");
   const queryClient = useQueryClient();
-  const [processingUser, setProcessingUser] = useState<number | null>(null);
 
-  // Get pending users
-  const { data: pendingUsers, isLoading, error } = useQuery({
-    queryKey: ['pendingUsers'],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["pendingUsers"],
     queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const response = await axios.get<PendingUser[]>(`${API_URL}/auth/pending`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await adminAPI.getPendingVerifications();
       return response.data;
-    }
+    },
   });
 
-  // Verify user mutation
-  const verifyUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_URL}/auth/verify/${userId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    },
-    onMutate: (userId) => {
-      setProcessingUser(userId);
-    },
+  const approveMutation = useMutation({
+    mutationFn: (userId: string) => adminAPI.verifyUser(userId, "approved"),
     onSuccess: () => {
-      toast.success('User verified successfully');
-      queryClient.invalidateQueries({ queryKey: ['pendingUsers'] });
+      toast.success("User has been approved successfully");
+      queryClient.invalidateQueries({ queryKey: ["pendingUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
     },
-    onError: (error) => {
-      console.error('Error verifying user:', error);
-      toast.error('Failed to verify user');
+    onError: () => {
+      toast.error("Failed to approve user");
     },
-    onSettled: () => {
-      setProcessingUser(null);
-    }
   });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ userId, remarks }: { userId: string; remarks: string }) =>
+      adminAPI.verifyUser(userId, "rejected", remarks),
+    onSuccess: () => {
+      toast.success("User has been rejected");
+      setIsRejectionOpen(false);
+      setRejectionRemarks("");
+      queryClient.invalidateQueries({ queryKey: ["pendingUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+    },
+    onError: () => {
+      toast.error("Failed to reject user");
+    },
+  });
+
+  const handleApprove = (user: User) => {
+    approveMutation.mutate(user._id);
+  };
+
+  const handleReject = () => {
+    if (!selectedUser) return;
+    rejectMutation.mutate({
+      userId: selectedUser._id,
+      remarks: rejectionRemarks,
+    });
+  };
+
+  const openRejectDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsRejectionOpen(true);
+  };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <UserVerificationTableLoading />;
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-md p-4 text-center">
-        <p className="text-red-600 dark:text-red-400">Failed to load pending users</p>
+      <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+        <h3 className="font-medium">Error loading pending verifications</h3>
+        <p className="text-sm">Please try refreshing the page.</p>
       </div>
     );
   }
 
-  if (!pendingUsers || pendingUsers.length === 0) {
+  if (!data || data.length === 0) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-8 text-center">
-        <User className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-        <h3 className="text-lg font-medium">No pending users</h3>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          All alumni accounts have been verified.
-        </p>
+      <div className="text-center py-10">
+        <p className="text-muted-foreground">No pending verifications</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -101,29 +129,144 @@ const UserVerificationTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pendingUsers.map((user) => (
-            <TableRow key={user.id}>
+          {data.map((user: User) => (
+            <TableRow key={user._id}>
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell>{user.email}</TableCell>
-              <TableCell>{user.batch || 'N/A'}</TableCell>
-              <TableCell>{user.department || 'N/A'}</TableCell>
-              <TableCell>{format(new Date(user.created_at), 'MMM dd, yyyy')}</TableCell>
+              <TableCell>{user.batch}</TableCell>
+              <TableCell>{user.department}</TableCell>
+              <TableCell>
+                {user.createdAt
+                  ? format(new Date(user.createdAt), "MMM d, yyyy")
+                  : "N/A"}
+              </TableCell>
               <TableCell className="text-right">
-                <Button
-                  size="sm"
-                  onClick={() => verifyUserMutation.mutate(user.id)}
-                  disabled={processingUser === user.id}
-                >
-                  {processingUser === user.id ? (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4 mr-1" />
-                  )}
-                  Verify
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                    onClick={() => handleApprove(user)}
+                    disabled={approveMutation.isPending}
+                  >
+                    {approveMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4 mr-1" />
+                    )}
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center border-destructive text-destructive hover:bg-destructive hover:text-white"
+                    onClick={() => openRejectDialog(user)}
+                    disabled={rejectMutation.isPending}
+                  >
+                    {rejectMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <X className="h-4 w-4 mr-1" />
+                    )}
+                    Reject
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={isRejectionOpen} onOpenChange={setIsRejectionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject User Verification</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting {selectedUser?.name}'s verification.
+              This will be visible to the user.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectionRemarks}
+            onChange={(e) => setRejectionRemarks(e.target.value)}
+            placeholder="Enter rejection reason..."
+            className="min-h-[100px]"
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRejectionOpen(false)}
+              disabled={rejectMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={!rejectionRemarks.trim() || rejectMutation.isPending}
+            >
+              {rejectMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Rejecting...
+                </>
+              ) : (
+                "Reject User"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+const UserVerificationTableLoading = () => {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Batch</TableHead>
+            <TableHead>Department</TableHead>
+            <TableHead>Registered On</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array(5)
+            .fill(0)
+            .map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Skeleton className="h-5 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-24" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-9 w-24" />
+                    <Skeleton className="h-9 w-24" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </div>

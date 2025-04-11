@@ -1,14 +1,24 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
-import { Post, Comment } from "@/data/postsData";
-import { Message, getConversationKey } from "@/data/messagesData";
+import axios from "axios";
+
+const API_URL = "http://localhost:5000/api";
 
 interface User {
-  id: number;
+  _id: string;
   name: string;
   email: string;
-  isAlumni: boolean;
+  isAdmin: boolean;
+  isVerified: boolean;
+  verificationStatus: string;
+  rejectionRemarks?: string;
+  batch?: string;
+  department?: string;
+  currentRole?: string;
+  company?: string;
+  location?: string;
+  profilePicture?: string;
 }
 
 interface AuthContextProps {
@@ -17,34 +27,11 @@ interface AuthContextProps {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   register: (name: string, email: string, password: string, batch: string, department: string) => Promise<boolean>;
-  createPost: (content: string, image?: string) => Promise<Post | null>;
-  addComment: (postId: number, content: string) => Promise<Comment | null>;
-  likePost: (postId: number) => Promise<boolean>;
-  sendMessage: (receiverId: number, content: string) => Promise<Message | null>;
-  markMessagesAsRead: (conversationKey: string) => Promise<boolean>;
+  updateProfile: (profileData: Partial<User>) => Promise<boolean>;
+  createPost: (content: string, image?: string) => Promise<any>;
+  addComment: (postId: string, content: string) => Promise<any>;
+  likePost: (postId: string) => Promise<boolean>;
 }
-
-// Sample user data - in a real app, this would come from a database
-const sampleUsers = [
-  {
-    id: 1,
-    name: "Rajiv Kumar",
-    email: "rajiv@example.com",
-    password: "password123",
-    isAlumni: true,
-    batch: "2018",
-    department: "Computer Science"
-  },
-  {
-    id: 2,
-    name: "Priya Singh",
-    email: "priya@example.com",
-    password: "password123",
-    isAlumni: true,
-    batch: "2019",
-    department: "Electrical Engineering"
-  }
-];
 
 export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -52,274 +39,208 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check if user is logged in on mount
   useEffect(() => {
-    // Check for stored user data in localStorage on component mount
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const checkLoggedIn = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
+        
+        const response = await axios.get(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setUser(response.data);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        localStorage.removeItem("token");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkLoggedIn();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call with a delay
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const foundUser = sampleUsers.find(
-          (u) => u.email === email && u.password === password
-        );
-        
-        if (foundUser) {
-          const { password, ...userWithoutPassword } = foundUser;
-          setUser(userWithoutPassword);
-          localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-          toast.success("Login successful");
-          resolve(true);
-        } else {
-          toast.error("Invalid email or password");
-          resolve(false);
-        }
-      }, 800);
-    });
+  // Register new user
+  const register = async (name: string, email: string, password: string, batch: string, department: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      
+      const response = await axios.post(`${API_URL}/auth/register`, {
+        name,
+        email,
+        password,
+        batch,
+        department
+      });
+      
+      const { token, user } = response.data;
+      
+      localStorage.setItem("token", token);
+      setUser(user);
+      
+      toast.success("Registration successful! Your account is pending verification.");
+      return true;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Registration failed";
+      toast.error(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Login user
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password
+      });
+      
+      const { token, user } = response.data;
+      
+      localStorage.setItem("token", token);
+      setUser(user);
+      
+      toast.success("Login successful");
+      return true;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Login failed";
+      toast.error(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Logout user
   const logout = () => {
+    localStorage.removeItem("token");
     setUser(null);
-    localStorage.removeItem("currentUser");
     toast.info("You've been logged out");
   };
 
-  const register = async (name: string, email: string, password: string, batch: string, department: string): Promise<boolean> => {
-    // Simulate API call with a delay
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const userExists = sampleUsers.some(u => u.email === email);
-        
-        if (userExists) {
-          toast.error("User with this email already exists");
-          resolve(false);
-        } else {
-          // In a real app, we would add this user to the database
-          const newUser = {
-            id: sampleUsers.length + 1,
-            name,
-            email,
-            password,
-            isAlumni: true,
-            batch,
-            department
-          };
-          
-          // Add to our sample users (simulate database insert)
-          sampleUsers.push(newUser);
-          
-          // Log the user in
-          const { password: _, ...userWithoutPassword } = newUser;
-          setUser(userWithoutPassword);
-          localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-          
-          toast.success("Registration successful");
-          resolve(true);
-        }
-      }, 800);
-    });
+  // Update profile
+  const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("You must be logged in to update your profile");
+        return false;
+      }
+      
+      const response = await axios.put(
+        `${API_URL}/auth/profile`,
+        profileData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setUser(response.data.user);
+      toast.success("Profile updated successfully");
+      return true;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to update profile";
+      toast.error(message);
+      return false;
+    }
   };
 
-  // New function for creating posts
-  const createPost = async (content: string, image?: string): Promise<Post | null> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!user) {
-          toast.error("You must be logged in to create a post");
-          resolve(null);
-          return;
-        }
-
-        // In a real app, this would be an API call to create a post
-        // Here we're simulating it
-        import("@/data/postsData").then(({ postsData }) => {
-          const newPost: Post = {
-            id: Math.max(...postsData.map(p => p.id)) + 1,
-            userId: user.id,
-            userName: user.name,
-            content,
-            image,
-            createdAt: new Date().toISOString(),
-            likes: 0,
-            comments: []
-          };
-          
-          // Add to our posts (simulate database insert)
-          postsData.unshift(newPost);
-          
-          toast.success("Post created successfully");
-          resolve(newPost);
-        });
-      }, 500);
-    });
+  // Create post
+  const createPost = async (content: string, image?: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("You must be logged in to create a post");
+        return null;
+      }
+      
+      if (!user?.isVerified) {
+        toast.error("Your account must be verified to create posts");
+        return null;
+      }
+      
+      const response = await axios.post(
+        `${API_URL}/posts`,
+        { content, image },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Post created successfully");
+      return response.data.post;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to create post";
+      toast.error(message);
+      return null;
+    }
   };
 
-  // Function for adding comments
-  const addComment = async (postId: number, content: string): Promise<Comment | null> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!user) {
-          toast.error("You must be logged in to comment");
-          resolve(null);
-          return;
-        }
-
-        // In a real app, this would be an API call
-        import("@/data/postsData").then(({ postsData }) => {
-          const postIndex = postsData.findIndex(p => p.id === postId);
-          
-          if (postIndex === -1) {
-            toast.error("Post not found");
-            resolve(null);
-            return;
-          }
-          
-          const newComment: Comment = {
-            id: Math.max(0, ...postsData[postIndex].comments.map(c => c.id)) + 1,
-            userId: user.id,
-            userName: user.name,
-            content,
-            createdAt: new Date().toISOString()
-          };
-          
-          // Add comment to post
-          postsData[postIndex].comments.push(newComment);
-          
-          toast.success("Comment added");
-          resolve(newComment);
-        });
-      }, 300);
-    });
+  // Add comment to post
+  const addComment = async (postId: string, content: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("You must be logged in to comment");
+        return null;
+      }
+      
+      if (!user?.isVerified) {
+        toast.error("Your account must be verified to comment");
+        return null;
+      }
+      
+      const response = await axios.post(
+        `${API_URL}/posts/${postId}/comments`,
+        { content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Comment added successfully");
+      return response.data.comment;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to add comment";
+      toast.error(message);
+      return null;
+    }
   };
 
-  // Function for liking posts
-  const likePost = async (postId: number): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!user) {
-          toast.error("You must be logged in to like posts");
-          resolve(false);
-          return;
-        }
-
-        // In a real app, this would be an API call
-        import("@/data/postsData").then(({ postsData }) => {
-          const postIndex = postsData.findIndex(p => p.id === postId);
-          
-          if (postIndex === -1) {
-            toast.error("Post not found");
-            resolve(false);
-            return;
-          }
-          
-          // Increment likes
-          postsData[postIndex].likes += 1;
-          
-          resolve(true);
-        });
-      }, 300);
-    });
-  };
-
-  // Function for sending messages
-  const sendMessage = async (receiverId: number, content: string): Promise<Message | null> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!user) {
-          toast.error("You must be logged in to send messages");
-          resolve(null);
-          return;
-        }
-
-        // In a real app, this would be an API call
-        import("@/data/messagesData").then(({ messagesData, conversationsData, getConversationKey }) => {
-          const conversationKey = getConversationKey(user.id, receiverId);
-          
-          const newMessage: Message = {
-            id: Date.now(),
-            senderId: user.id,
-            receiverId,
-            content,
-            timestamp: new Date().toISOString(),
-            read: false
-          };
-          
-          // Add message to conversation
-          if (!messagesData[conversationKey]) {
-            messagesData[conversationKey] = [];
-          }
-          messagesData[conversationKey].push(newMessage);
-          
-          // Update or create conversation
-          const existingConversation = conversationsData.find(
-            conv => conv.participants.includes(user.id) && conv.participants.includes(receiverId)
-          );
-          
-          if (existingConversation) {
-            existingConversation.lastMessage = content;
-            existingConversation.lastMessageTime = newMessage.timestamp;
-            existingConversation.unreadCount += 1;
-          } else {
-            conversationsData.push({
-              id: conversationsData.length + 1,
-              participants: [user.id, receiverId],
-              lastMessage: content,
-              lastMessageTime: newMessage.timestamp,
-              unreadCount: 1
-            });
-          }
-          
-          toast.success("Message sent");
-          resolve(newMessage);
-        });
-      }, 400);
-    });
-  };
-
-  // Function for marking messages as read
-  const markMessagesAsRead = async (conversationKey: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (!user) {
-          resolve(false);
-          return;
-        }
-
-        // In a real app, this would be an API call
-        import("@/data/messagesData").then(({ messagesData, conversationsData }) => {
-          // Get user ids from conversation key
-          const userIds = conversationKey.split('-').map(Number);
-          
-          if (!messagesData[conversationKey]) {
-            resolve(false);
-            return;
-          }
-          
-          // Mark all messages as read
-          messagesData[conversationKey].forEach(msg => {
-            if (msg.receiverId === user.id) {
-              msg.read = true;
-            }
-          });
-          
-          // Update conversation unread count
-          const conversationIndex = conversationsData.findIndex(
-            conv => userIds.every(id => conv.participants.includes(id))
-          );
-          
-          if (conversationIndex !== -1) {
-            conversationsData[conversationIndex].unreadCount = 0;
-          }
-          
-          resolve(true);
-        });
-      }, 300);
-    });
+  // Like post
+  const likePost = async (postId: string): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("You must be logged in to like posts");
+        return false;
+      }
+      
+      if (!user?.isVerified) {
+        toast.error("Your account must be verified to like posts");
+        return false;
+      }
+      
+      await axios.post(
+        `${API_URL}/posts/${postId}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      return true;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to like post";
+      toast.error(message);
+      return false;
+    }
   };
 
   return (
@@ -329,11 +250,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       login, 
       logout, 
       register,
+      updateProfile,
       createPost,
       addComment,
-      likePost,
-      sendMessage,
-      markMessagesAsRead
+      likePost
     }}>
       {children}
     </AuthContext.Provider>
