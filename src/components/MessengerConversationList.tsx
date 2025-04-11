@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,8 +25,9 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
 
   useEffect(() => {
     if (user) {
-      // Get conversations for current user
-      const userConvs = getUserConversations(user.id);
+      // Convert string ID to number if needed and get conversations
+      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      const userConvs = getUserConversations(userId);
       setConversations(userConvs);
     }
   }, [user]);
@@ -35,7 +37,8 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
       const filtered = alumniData.filter(
         (alumni) =>
           alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          alumni.id !== user?.id
+          (typeof alumni.id === 'string' ? parseInt(alumni.id) : alumni.id) !== 
+          (typeof user?.id === 'string' ? parseInt(user.id) : user?.id)
       );
       setFilteredAlumni(filtered);
     } else {
@@ -45,8 +48,9 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
 
   const getOtherParticipant = (conversation: Conversation) => {
     if (!user) return null;
-    const otherUserId = conversation.participants.find((id) => id !== user.id);
-    return alumniData.find((a) => a.id === otherUserId);
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const otherUserId = conversation.participants.find((id) => id !== userId);
+    return alumniData.find((a) => (typeof a.id === 'string' ? parseInt(a.id) : a.id) === otherUserId);
   };
 
   const formatTime = (dateString: string) => {
@@ -87,7 +91,7 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
                 key={alumni.id}
                 className="w-full px-3 py-2 hover:bg-gray-100 flex items-center"
                 onClick={() => {
-                  onSelectConversation(alumni.id);
+                  onSelectConversation(typeof alumni.id === 'string' ? parseInt(alumni.id) : alumni.id);
                   setSearchTerm("");
                 }}
               >
@@ -118,8 +122,9 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
               conversations.map((conversation) => {
                 const otherUser = getOtherParticipant(conversation);
                 if (!otherUser) return null;
-
-                const isActive = activeConversationUserId === otherUser.id;
+                
+                const otherUserId = typeof otherUser.id === 'string' ? parseInt(otherUser.id) : otherUser.id;
+                const isActive = activeConversationUserId === otherUserId;
 
                 return (
                   <button
@@ -127,7 +132,7 @@ const MessengerConversationList: React.FC<MessengerConversationListProps> = ({
                     className={`w-full px-3 py-2 ${
                       isActive ? "bg-gray-100" : "hover:bg-gray-100"
                     } flex items-center`}
-                    onClick={() => onSelectConversation(otherUser.id)}
+                    onClick={() => onSelectConversation(otherUserId)}
                   >
                     <div className="relative">
                       <Avatar className="h-10 w-10 mr-3">

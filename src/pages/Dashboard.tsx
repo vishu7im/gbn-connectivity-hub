@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,8 +42,9 @@ const Dashboard = () => {
     return null;
   }
 
-  // Filter jobs posted by the current user
-  const userJobs = jobsData.filter((job) => job.postedById === user.id);
+  // Filter jobs posted by the current user and handle string/number ID conversion
+  const userIdNum = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+  const userJobs = jobsData.filter((job) => job.postedById === userIdNum);
 
   const getInitials = (name: string) => {
     return name
@@ -269,7 +271,7 @@ const Dashboard = () => {
                     <h2 className="text-2xl font-bold">My Posts</h2>
                   </div>
 
-                  <PostsFeed userId={user.id} />
+                  <PostsFeed userId={userIdNum} />
                 </TabsContent>
               </Tabs>
             </div>
