@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -13,34 +14,38 @@ import {
 } from "@/components/ui/select";
 import { Search, Filter, FilterX, GraduationCap, Building } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { alumniData } from "@/data/alumniData";
 import ViewToggle from "@/components/ViewToggle";
 import MemberCard from "@/components/MemberCard";
+import { usePagination } from "@/hooks/usePagination";
 
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("all");
   const [selectedDept, setSelectedDept] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
     const savedView = localStorage.getItem("membersViewMode");
     return (savedView as "list" | "grid") || "list";
   });
 
-  const itemsPerPage = viewMode === "grid" ? 8 : 10;
+  // Use our custom pagination hook
+  const { 
+    page: currentPage, 
+    setPage: setCurrentPage, 
+    pageSize: itemsPerPage,
+    changePageSize,
+    updateTotalItems
+  } = usePagination({
+    initialPageSize: viewMode === "grid" ? 8 : 10
+  });
 
   // Save view preference to localStorage
   useEffect(() => {
     localStorage.setItem("membersViewMode", viewMode);
-  }, [viewMode]);
+    // Update items per page when view mode changes
+    changePageSize(viewMode === "grid" ? 8 : 10);
+  }, [viewMode, changePageSize]);
 
   // Get unique batches and departments for filters
   const batches = [...new Set(alumniData.map((alumni) => alumni.batch))];
@@ -62,6 +67,11 @@ const Members = () => {
 
     return matchesSearch && matchesBatch && matchesDept;
   });
+
+  // Update total items whenever filteredAlumni changes
+  useEffect(() => {
+    updateTotalItems(filteredAlumni.length);
+  }, [filteredAlumni.length, updateTotalItems]);
 
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -181,48 +191,13 @@ const Members = () => {
 
           {filteredAlumni.length > itemsPerPage && (
             <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          isActive={currentPage === page}
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={filteredAlumni.length}
+                pageSize={itemsPerPage}
+              />
             </div>
           )}
         </div>

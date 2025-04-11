@@ -20,14 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Search,
   Briefcase,
@@ -39,6 +32,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ViewToggle from "@/components/ViewToggle";
+import { usePagination } from "@/hooks/usePagination";
 
 const jobsData = [
   {
@@ -153,16 +147,25 @@ const JobBoard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
     const savedView = localStorage.getItem("jobsViewMode");
     return (savedView as "list" | "grid") || "list";
   });
-  const itemsPerPage = viewMode === "grid" ? 6 : 4;
+
+  const { 
+    page: currentPage, 
+    setPage: setCurrentPage, 
+    pageSize: itemsPerPage,
+    changePageSize,
+    updateTotalItems
+  } = usePagination({
+    initialPageSize: viewMode === "grid" ? 6 : 4
+  });
 
   useEffect(() => {
     localStorage.setItem("jobsViewMode", viewMode);
-  }, [viewMode]);
+    changePageSize(viewMode === "grid" ? 6 : 4);
+  }, [viewMode, changePageSize]);
 
   const categories = [...new Set(jobsData.map((job) => job.category))];
   const jobTypes = [...new Set(jobsData.map((job) => job.type))];
@@ -179,6 +182,10 @@ const JobBoard = () => {
 
     return matchesSearch && matchesCategory && matchesType;
   });
+
+  useEffect(() => {
+    updateTotalItems(filteredJobs.length);
+  }, [filteredJobs.length, updateTotalItems]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -221,7 +228,7 @@ const JobBoard = () => {
             <h2 className="text-2xl font-bold">Available Positions</h2>
             <div className="flex items-center gap-4">
               <ViewToggle view={viewMode} onChange={setViewMode} />
-              {user?.isAlumni && (
+              {user?.verificationStatus === "approved" && (
                 <Link to="/dashboard/post-job">
                   <Button>
                     <Briefcase className="mr-2 h-4 w-4" />
@@ -387,48 +394,13 @@ const JobBoard = () => {
 
           {filteredJobs.length > itemsPerPage && (
             <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          isActive={currentPage === page}
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={filteredJobs.length}
+                pageSize={itemsPerPage}
+              />
             </div>
           )}
         </div>

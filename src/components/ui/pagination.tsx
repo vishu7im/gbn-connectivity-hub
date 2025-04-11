@@ -3,6 +3,7 @@ import React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "./button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
   currentPage: number;
@@ -178,3 +179,65 @@ export function Pagination({
     </div>
   );
 }
+
+// Add new pagination components to match the expected exports
+export const PaginationContent = ({ 
+  children,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex flex-row items-center gap-1", className)} {...props}>
+    {children}
+  </div>
+);
+
+export const PaginationItem = ({ 
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLLIElement>) => (
+  <li className={cn("", className)} {...props} />
+);
+
+export const PaginationLink = ({ 
+  className,
+  isActive = false,
+  ...props
+}: React.ComponentProps<typeof Button> & { isActive?: boolean }) => (
+  <Button
+    aria-current={isActive ? "page" : undefined}
+    variant={isActive ? "default" : "outline"}
+    size="icon"
+    className={cn("h-8 w-8", className)}
+    {...props}
+  />
+);
+
+export const PaginationPrevious = ({ 
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) => (
+  <Button
+    variant="outline"
+    size="icon" 
+    className={cn("h-8 w-8 gap-1", className)}
+    {...props}
+  >
+    <ChevronLeft className="h-4 w-4" />
+    <span className="sr-only">Previous page</span>
+  </Button>
+);
+
+export const PaginationNext = ({ 
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) => (
+  <Button
+    variant="outline"
+    size="icon"
+    className={cn("h-8 w-8 gap-1", className)}
+    {...props}
+  >
+    <ChevronRight className="h-4 w-4" />
+    <span className="sr-only">Next page</span>
+  </Button>
+);
