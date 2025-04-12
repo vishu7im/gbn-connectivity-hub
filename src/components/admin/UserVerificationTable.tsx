@@ -98,11 +98,14 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
               <TableCell className="font-medium">
                 {user.name}
                 {user.status && (
-                  <Badge variant={
-                    user.status === 'pending' ? 'outline' : 
-                    user.status === 'approved' ? 'success' :
-                    user.status === 'rejected' ? 'destructive' : 'secondary'
-                  } className="ml-2">
+                  <Badge 
+                    variant={
+                      user.status === 'pending' ? 'outline' : 
+                      user.status === 'approved' ? 'default' :
+                      user.status === 'rejected' ? 'destructive' : 'secondary'
+                    } 
+                    className="ml-2"
+                  >
                     {user.status}
                   </Badge>
                 )}
