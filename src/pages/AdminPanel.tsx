@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Added Button import
 import UserVerificationTable from '@/components/admin/UserVerificationTable';
 import GalleryManager from '@/components/admin/GalleryManager';
 import NewsManager from '@/components/admin/NewsManager';
@@ -28,7 +29,8 @@ import {
   User,
   Home,
   Award,
-  FileText
+  FileText,
+  Briefcase // Added Briefcase import
 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { mockAdminData } from '@/data/mockAdminData';

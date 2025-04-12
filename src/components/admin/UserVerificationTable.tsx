@@ -122,7 +122,7 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
               <TableCell>{user.batch}</TableCell>
               <TableCell>{user.department}</TableCell>
               <TableCell>
-                {user.verificationDocument ? (
+                {user.verificationDocuments ? (
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -271,17 +271,17 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center">
-            {selectedUser?.verificationDocument ? (
+            {selectedUser?.verificationDocuments ? (
               <div className="mt-4 p-2 border rounded-md w-full max-h-[60vh] overflow-auto">
-                {selectedUser.verificationDocument.includes('image') ? (
+                {selectedUser.verificationDocuments.includes('image') ? (
                   <img 
-                    src={selectedUser.verificationDocument} 
+                    src={selectedUser.verificationDocuments} 
                     alt="Verification Document" 
                     className="mx-auto"
                   />
-                ) : selectedUser.verificationDocument.includes('pdf') ? (
+                ) : selectedUser.verificationDocuments.includes('pdf') ? (
                   <embed 
-                    src={selectedUser.verificationDocument} 
+                    src={selectedUser.verificationDocuments} 
                     type="application/pdf" 
                     className="w-full h-[50vh]" 
                   />
@@ -290,13 +290,6 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
                     <FileCheck className="h-16 w-16 text-blue-500 mb-2" />
                     <p className="text-sm text-muted-foreground">
                       Document available but preview is not supported.
-                      {selectedUser.documentType && (
-                        <span className="block mt-1 font-medium">
-                          Type: {selectedUser.documentType === 'other' ? 'Other Document' : 
-                            selectedUser.documentType === 'degree' ? 'Degree Certificate' : 
-                            selectedUser.documentType === 'id_card' ? 'College ID Card' : 'Marksheet'}
-                        </span>
-                      )}
                     </p>
                   </div>
                 )}
@@ -310,18 +303,7 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
           </div>
           <DialogFooter className="flex justify-between">
             <div>
-              {selectedUser?.documentType && (
-                <Badge variant="outline" className="mr-2">
-                  {selectedUser.documentType === 'other' ? 'Other Document' : 
-                    selectedUser.documentType === 'degree' ? 'Degree Certificate' : 
-                    selectedUser.documentType === 'id_card' ? 'College ID Card' : 'Marksheet'}
-                </Badge>
-              )}
-              {selectedUser?.documentName && (
-                <Badge variant="secondary">
-                  {selectedUser.documentName}
-                </Badge>
-              )}
+              {/* We've removed documentType and documentName references since they don't exist in UserType */}
             </div>
             <Button variant="outline" onClick={() => setIsDocumentOpen(false)}>
               Close

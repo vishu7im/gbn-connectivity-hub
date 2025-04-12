@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
@@ -88,19 +87,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // New fields for document verification
-  verificationDocument: {
+  verificationDocuments: {
     type: String,
     default: ''
-  },
-  documentType: {
-    type: String,
-    enum: ['degree', 'id_card', 'marksheet', 'other'],
-    default: 'other'
-  },
-  documentName: {
-    type: String,
-    trim: true
   },
   documentUploadDate: {
     type: Date,

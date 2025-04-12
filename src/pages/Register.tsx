@@ -1,419 +1,372 @@
-
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useAuth } from "@/contexts/AuthContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Upload, UserPlus } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff } from 'lucide-react';
 
-const registerSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Please enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string(),
-    batch: z.string().min(1, "Batch year is required"),
-    department: z.string().min(1, "Department is required"),
-    rollNumber: z.string().optional(),
-    documentType: z.enum(["degree", "id_card", "marksheet", "other"]).optional(),
-    documentName: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
+const registerFormSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Invalid email address.",
+  }),
+  password: z.string().min(8, {
+    message: "Password must be at least 8 characters.",
+  }),
+  batch: z.string().min(4, {
+    message: "Please select a valid batch.",
+  }),
+  department: z.string().min(2, {
+    message: "Please select a department.",
+  }),
+  rollNumber: z.string().optional(),
+  graduation: z.string().optional(),
+  currentRole: z.string().optional(),
+  company: z.string().optional(),
+  location: z.string().optional(),
+  phone: z.string().optional(),
+  bio: z.string().optional(),
+  linkedin: z.string().optional(),
+  facebook: z.string().optional(),
+  twitter: z.string().optional(),
+  terms: z.boolean().refine((value) => value === true, {
+    message: 'You must accept the terms and conditions.',
+  }),
+})
 
 const Register = () => {
-  const { register } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const [documentFile, setDocumentFile] = useState<File | null>(null);
-  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
+  const { register, isLoading } = useAuth();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<z.infer<typeof registerFormSchema>>({
+    resolver: zodResolver(registerFormSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
       batch: "",
       department: "",
       rollNumber: "",
-      documentType: "other",
-      documentName: "",
+      graduation: "",
+      currentRole: "",
+      company: "",
+      location: "",
+      phone: "",
+      bio: "",
+      linkedin: "",
+      facebook: "",
+      twitter: "",
+      terms: false,
     },
-  });
+  })
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      setDocumentFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setDocumentPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const onSubmit = async (data: z.infer<typeof registerFormSchema>) => {
+    try {
+      await register(data.name, data.email, data.password, data.batch, data.department, data.rollNumber, data.graduation, data.currentRole, data.company, data.location, data.phone, data.bio, data.linkedin, data.facebook, data.twitter);
+      toast.success('Registration successful! Please check your email to verify your account.');
+      navigate('/login');
+    } catch (error) {
+      toast.error('Registration failed. Please try again.');
+      console.error("Registration error:", error);
     }
   };
-
-  const onSubmit = async (values: RegisterFormValues) => {
-    // For development purposes, let's bypass document validation
-    const success = await register(
-      values.name,
-      values.email,
-      values.password,
-      values.batch,
-      values.department,
-      values.rollNumber,
-      documentPreview, // Pass the base64 encoded document
-      values.documentType,
-      values.documentName || documentFile?.name
-    );
-
-    if (success) {
-      navigate("/dashboard");
-    }
-  };
-
-  // Get sample data for dropdowns
-  const batches = [
-    "2016",
-    "2017",
-    "2018",
-    "2019",
-    "2020",
-    "2021",
-    "2022",
-    "2023",
-  ];
-  const departments = [
-    "Computer Science",
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Electronics",
-  ];
-  const documentTypes = [
-    { value: "degree", label: "Degree Certificate" },
-    { value: "id_card", label: "College ID Card" },
-    { value: "marksheet", label: "Marksheet" },
-    { value: "other", label: "Other Document" },
-  ];
 
   return (
-    <div className="min-h-screen text-primary-foreground flex flex-col">
-      <Header />
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-lg mx-auto">
-            <Card>
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold">Register</CardTitle>
-                <CardDescription>
-                  Create an alumni account to post job opportunities and connect
-                  with fellow alumni
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-900 py-12">
+      <Card className="w-full max-w-md space-y-4 border-none shadow-xl bg-white dark:bg-slate-800 text-primary-foreground">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+          <CardDescription className="text-muted-foreground text-center">
+            Enter your details below to register
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Controller
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <Input id="name" placeholder="Enter your name" {...field} />
+                )}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field }) => (
+                  <Input type="email" id="email" placeholder="Enter your email" {...field} />
+                )}
+              />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      placeholder="Enter your password"
+                      {...field}
                     />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="your.email@example.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="batch"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Batch Year</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select batch" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {batches.map((batch) => (
-                                  <SelectItem key={batch} value={batch}>
-                                    {batch}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="department"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Department</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {departments.map((dept) => (
-                                  <SelectItem key={dept} value={dept}>
-                                    {dept}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="rollNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Roll Number (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your college roll number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Separator className="my-2" />
-                    
-                    <div className="space-y-4">
-                      <Alert variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Verification Required</AlertTitle>
-                        <AlertDescription>
-                          Please upload a document to verify your alumni status. This helps us maintain the integrity of our community.
-                        </AlertDescription>
-                      </Alert>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="documentType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Document Type</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {documentTypes.map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      {type.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="documentName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Document Name (Optional)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Name your document" 
-                                  {...field} 
-                                  value={field.value || (documentFile?.name || '')}
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                        <Label htmlFor="document-upload" className="w-full cursor-pointer">
-                          <div className="flex flex-col items-center">
-                            <Upload className="h-6 w-6 mb-2 text-gray-500" />
-                            <span className="text-sm font-medium">
-                              {documentFile ? 'Change document' : 'Upload verification document'}
-                            </span>
-                            <span className="text-xs text-gray-500 mt-1">
-                              PDF, JPG, or PNG up to 5MB
-                            </span>
-                          </div>
-                          <Input 
-                            id="document-upload" 
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            className="hidden"
-                            onChange={handleFileChange}
-                          />
-                        </Label>
-                        
-                        {documentPreview && (
-                          <div className="mt-2">
-                            {documentFile?.type.includes('image') ? (
-                              <img 
-                                src={documentPreview} 
-                                alt="Document preview" 
-                                className="max-h-28 max-w-full mx-auto rounded border" 
-                              />
-                            ) : (
-                              <div className="flex items-center justify-center space-x-2 text-sm text-green-600">
-                                <div className="h-3 w-3 bg-green-600 rounded-full" />
-                                <span>Document uploaded: {documentFile?.name}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <Separator className="my-2" />
-                    
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="******"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="******"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full">
-                      <UserPlus className="mr-2 h-4 w-4" /> Register
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-              <CardFooter className="flex flex-col items-center space-y-2 pt-0">
-                <div className="text-center text-sm">
-                  <p>
-                    Already have an account?{" "}
-                    <Link to="/login" className="text-blue-600 hover:underline">
-                      Login
-                    </Link>
-                  </p>
-                </div>
-                <div className="text-xs text-muted-foreground text-center">
-                  Your account will be pending until an admin verifies your documents
-                </div>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </main>
-      <Footer />
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">Toggle password visibility</span>
+                </Button>
+              </div>
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="batch">Batch</Label>
+              <Controller
+                control={control}
+                name="batch"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select batch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: (new Date()).getFullYear() - 1980 + 1 }, (_, i) => {
+                        const year = 1980 + i;
+                        return <SelectItem key={year} value={String(year)}>{year}</SelectItem>;
+                      })}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.batch && (
+                <p className="text-sm text-red-500">{errors.batch.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="department">Department</Label>
+              <Controller
+                control={control}
+                name="department"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Computer Science">Computer Science</SelectItem>
+                      <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
+                      <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
+                      <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
+                      {/* Add more departments as needed */}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.department && (
+                <p className="text-sm text-red-500">{errors.department.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="rollNumber">Roll Number (Optional)</Label>
+              <Controller
+                control={control}
+                name="rollNumber"
+                render={({ field }) => (
+                  <Input id="rollNumber" placeholder="Enter your roll number" {...field} />
+                )}
+              />
+              {errors.rollNumber && (
+                <p className="text-sm text-red-500">{errors.rollNumber.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="graduation">Year of Graduation (Optional)</Label>
+              <Controller
+                control={control}
+                name="graduation"
+                render={({ field }) => (
+                  <Input id="graduation" placeholder="Enter your graduation year" {...field} />
+                )}
+              />
+              {errors.graduation && (
+                <p className="text-sm text-red-500">{errors.graduation.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="currentRole">Current Role (Optional)</Label>
+              <Controller
+                control={control}
+                name="currentRole"
+                render={({ field }) => (
+                  <Input id="currentRole" placeholder="Enter your current role" {...field} />
+                )}
+              />
+              {errors.currentRole && (
+                <p className="text-sm text-red-500">{errors.currentRole.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="company">Company (Optional)</Label>
+              <Controller
+                control={control}
+                name="company"
+                render={({ field }) => (
+                  <Input id="company" placeholder="Enter your company" {...field} />
+                )}
+              />
+              {errors.company && (
+                <p className="text-sm text-red-500">{errors.company.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="location">Location (Optional)</Label>
+              <Controller
+                control={control}
+                name="location"
+                render={({ field }) => (
+                  <Input id="location" placeholder="Enter your location" {...field} />
+                )}
+              />
+              {errors.location && (
+                <p className="text-sm text-red-500">{errors.location.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Controller
+                control={control}
+                name="phone"
+                render={({ field }) => (
+                  <Input id="phone" placeholder="Enter your phone number" {...field} />
+                )}
+              />
+              {errors.phone && (
+                <p className="text-sm text-red-500">{errors.phone.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="bio">Bio (Optional)</Label>
+              <Controller
+                control={control}
+                name="bio"
+                render={({ field }) => (
+                  <Textarea id="bio" placeholder="Enter your bio" {...field} />
+                )}
+              />
+              {errors.bio && (
+                <p className="text-sm text-red-500">{errors.bio.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
+              <Controller
+                control={control}
+                name="linkedin"
+                render={({ field }) => (
+                  <Input id="linkedin" placeholder="Enter your LinkedIn profile URL" {...field} />
+                )}
+              />
+              {errors.linkedin && (
+                <p className="text-sm text-red-500">{errors.linkedin.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="facebook">Facebook (Optional)</Label>
+              <Controller
+                control={control}
+                name="facebook"
+                render={({ field }) => (
+                  <Input id="facebook" placeholder="Enter your Facebook profile URL" {...field} />
+                )}
+              />
+              {errors.facebook && (
+                <p className="text-sm text-red-500">{errors.facebook.message}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="twitter">Twitter (Optional)</Label>
+              <Controller
+                control={control}
+                name="twitter"
+                render={({ field }) => (
+                  <Input id="twitter" placeholder="Enter your Twitter profile URL" {...field} />
+                )}
+              />
+              {errors.twitter && (
+                <p className="text-sm text-red-500">{errors.twitter.message}</p>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Controller
+                control={control}
+                name="terms"
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+              <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                I agree to the <Link to="/terms" className="underline underline-offset-2 hover:text-primary">terms and conditions</Link>
+              </Label>
+            </div>
+            {errors.terms && (
+              <p className="text-sm text-red-500">{errors.terms.message}</p>
+            )}
+            <Button disabled={isLoading} className="w-full" type="submit">
+              {isLoading ? (
+                <>
+                  Registering...
+                </>
+              ) : (
+                "Register"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="text-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account? <Link to="/login" className="underline underline-offset-2 hover:text-primary">Log in</Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
