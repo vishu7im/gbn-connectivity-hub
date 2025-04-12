@@ -1,7 +1,5 @@
 
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminAPI } from "@/services/api";
 import { toast } from "sonner";
 import {
   Table,
@@ -19,98 +17,64 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, X, Loader2, Ban, Lock, Unlock } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { UserType } from "@/data/mockAdminData";
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  batch: string;
-  department: string;
-  createdAt: string;
+interface UserVerificationTableProps {
+  users: UserType[];
+  isBlockedList?: boolean;
+  isRejectedList?: boolean;
 }
 
-const UserVerificationTable = () => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = false }: UserVerificationTableProps) => {
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [isRejectionOpen, setIsRejectionOpen] = useState(false);
   const [rejectionRemarks, setRejectionRemarks] = useState("");
-  const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["pendingUsers"],
-    queryFn: async () => {
-      const response = await adminAPI.getPendingVerifications();
-      return response.data;
-    },
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: (userId: string) => adminAPI.verifyUser(userId, "approved"),
-    onSuccess: () => {
-      toast.success("User has been approved successfully");
-      queryClient.invalidateQueries({ queryKey: ["pendingUsers"] });
-      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
-    },
-    onError: () => {
-      toast.error("Failed to approve user");
-    },
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: ({ userId, remarks }: { userId: string; remarks: string }) =>
-      adminAPI.verifyUser(userId, "rejected", remarks),
-    onSuccess: () => {
-      toast.success("User has been rejected");
-      setIsRejectionOpen(false);
-      setRejectionRemarks("");
-      queryClient.invalidateQueries({ queryKey: ["pendingUsers"] });
-      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
-    },
-    onError: () => {
-      toast.error("Failed to reject user");
-    },
-  });
-
-  const handleApprove = (user: User) => {
-    approveMutation.mutate(user._id);
+  const handleApprove = (user: UserType) => {
+    setIsLoading(user._id);
+    // Simulate API call
+    setTimeout(() => {
+      toast.success(`${user.name} has been approved successfully`);
+      setIsLoading(null);
+    }, 1000);
   };
 
   const handleReject = () => {
     if (!selectedUser) return;
-    rejectMutation.mutate({
-      userId: selectedUser._id,
-      remarks: rejectionRemarks,
-    });
+    setIsLoading(selectedUser._id);
+    // Simulate API call
+    setTimeout(() => {
+      toast.success(`${selectedUser.name} has been rejected`);
+      setIsRejectionOpen(false);
+      setRejectionRemarks("");
+      setIsLoading(null);
+    }, 1000);
   };
 
-  const openRejectDialog = (user: User) => {
+  const handleBlock = (user: UserType) => {
+    setIsLoading(user._id);
+    // Simulate API call
+    setTimeout(() => {
+      toast.success(`${user.name} has been ${isBlockedList ? 'unblocked' : 'blocked'}`);
+      setIsLoading(null);
+    }, 1000);
+  };
+
+  const openRejectDialog = (user: UserType) => {
     setSelectedUser(user);
     setIsRejectionOpen(true);
   };
 
-  if (isLoading) {
-    return <UserVerificationTableLoading />;
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-        <h3 className="font-medium">Error loading pending verifications</h3>
-        <p className="text-sm">Please try refreshing the page.</p>
-      </div>
-    );
-  }
-
-  if (!data || data.length === 0) {
+  if (!users || users.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-muted-foreground">No pending verifications</p>
+        <p className="text-muted-foreground">No users found</p>
       </div>
     );
   }
@@ -129,9 +93,20 @@ const UserVerificationTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((user: User) => (
+          {users.map((user: UserType) => (
             <TableRow key={user._id}>
-              <TableCell className="font-medium">{user.name}</TableCell>
+              <TableCell className="font-medium">
+                {user.name}
+                {user.status && (
+                  <Badge variant={
+                    user.status === 'pending' ? 'outline' : 
+                    user.status === 'approved' ? 'success' :
+                    user.status === 'rejected' ? 'destructive' : 'secondary'
+                  } className="ml-2">
+                    {user.status}
+                  </Badge>
+                )}
+              </TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.batch}</TableCell>
               <TableCell>{user.department}</TableCell>
@@ -142,33 +117,71 @@ const UserVerificationTable = () => {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  {!isBlockedList && !isRejectedList && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                        onClick={() => handleApprove(user)}
+                        disabled={isLoading === user._id}
+                      >
+                        {isLoading === user._id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4 mr-1" />
+                        )}
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center border-destructive text-destructive hover:bg-destructive hover:text-white"
+                        onClick={() => openRejectDialog(user)}
+                        disabled={isLoading === user._id}
+                      >
+                        {isLoading === user._id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4 mr-1" />
+                        )}
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  
+                  {isRejectedList && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                      onClick={() => handleApprove(user)}
+                      disabled={isLoading === user._id}
+                    >
+                      {isLoading === user._id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-1" />
+                      )}
+                      Approve Now
+                    </Button>
+                  )}
+                  
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="flex items-center border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-                    onClick={() => handleApprove(user)}
-                    disabled={approveMutation.isPending}
+                    variant={isBlockedList ? "outline" : "destructive"}
+                    className={`flex items-center ${isBlockedList ? "border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white" : ""}`}
+                    onClick={() => handleBlock(user)}
+                    disabled={isLoading === user._id}
                   >
-                    {approveMutation.isPending ? (
+                    {isLoading === user._id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isBlockedList ? (
+                      <Unlock className="h-4 w-4 mr-1" />
                     ) : (
-                      <Check className="h-4 w-4 mr-1" />
+                      <Ban className="h-4 w-4 mr-1" />
                     )}
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex items-center border-destructive text-destructive hover:bg-destructive hover:text-white"
-                    onClick={() => openRejectDialog(user)}
-                    disabled={rejectMutation.isPending}
-                  >
-                    {rejectMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <X className="h-4 w-4 mr-1" />
-                    )}
-                    Reject
+                    {isBlockedList ? "Unblock" : "Block"}
                   </Button>
                 </div>
               </TableCell>
@@ -196,16 +209,16 @@ const UserVerificationTable = () => {
             <Button
               variant="outline"
               onClick={() => setIsRejectionOpen(false)}
-              disabled={rejectMutation.isPending}
+              disabled={isLoading === selectedUser?._id}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
-              disabled={!rejectionRemarks.trim() || rejectMutation.isPending}
+              disabled={!rejectionRemarks.trim() || isLoading === selectedUser?._id}
             >
-              {rejectMutation.isPending ? (
+              {isLoading === selectedUser?._id ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Rejecting...
@@ -218,58 +231,6 @@ const UserVerificationTable = () => {
         </DialogContent>
       </Dialog>
     </>
-  );
-};
-
-const UserVerificationTableLoading = () => {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-10 w-32" />
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Batch</TableHead>
-            <TableHead>Department</TableHead>
-            <TableHead>Registered On</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array(5)
-            .fill(0)
-            .map((_, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <Skeleton className="h-5 w-32" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-40" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-16" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-24" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Skeleton className="h-9 w-24" />
-                    <Skeleton className="h-9 w-24" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </div>
   );
 };
 

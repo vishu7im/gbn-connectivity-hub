@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,104 +8,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Image, Loader2, Plus, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { GalleryImageType } from '@/data/mockAdminData';
+import { format } from 'date-fns';
 
-interface GalleryImage {
-  id: number;
-  title: string | null;
-  description: string | null;
-  image_path: string;
-  user_id: number;
-  uploaded_by: string;
-  created_at: string;
+interface GalleryManagerProps {
+  images: GalleryImageType[];
 }
 
-const API_URL = "http://localhost:5000/api";
-
-const GalleryManager = () => {
-  const queryClient = useQueryClient();
+const GalleryManager = ({ images }: GalleryManagerProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteInProgress, setDeleteInProgress] = useState<number | null>(null);
-
-  // Get all gallery images
-  const { data: images, isLoading } = useQuery({
-    queryKey: ['galleryImages'],
-    queryFn: async () => {
-      const response = await axios.get<GalleryImage[]>(`${API_URL}/gallery`);
-      return response.data;
-    }
-  });
-
-  // Upload image mutation
-  const uploadMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedImage) {
-        throw new Error('No image selected');
-      }
-
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('image', selectedImage);
-
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/gallery`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
-      });
-    },
-    onMutate: () => {
-      setIsUploading(true);
-    },
-    onSuccess: () => {
-      toast.success('Image uploaded successfully');
-      queryClient.invalidateQueries({ queryKey: ['galleryImages'] });
-      setTitle('');
-      setDescription('');
-      setSelectedImage(null);
-      setIsAddDialogOpen(false);
-    },
-    onError: (error) => {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-    },
-    onSettled: () => {
-      setIsUploading(false);
-    }
-  });
-
-  // Delete image mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (imageId: number) => {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/gallery/${imageId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    },
-    onMutate: (imageId) => {
-      setDeleteInProgress(imageId);
-    },
-    onSuccess: () => {
-      toast.success('Image deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['galleryImages'] });
-    },
-    onError: (error) => {
-      console.error('Error deleting image:', error);
-      toast.error('Failed to delete image');
-    },
-    onSettled: () => {
-      setDeleteInProgress(null);
-    }
-  });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<GalleryImageType[]>(images);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedImage(e.target.files[0]);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
     }
   };
 
@@ -117,7 +44,43 @@ const GalleryManager = () => {
       toast.error('Please select an image');
       return;
     }
-    uploadMutation.mutate();
+    
+    setIsUploading(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      // Create a new mock image entry
+      const newImage: GalleryImageType = {
+        id: Math.floor(Math.random() * 10000),
+        title: title || null,
+        description: description || null,
+        image_path: imagePreview || '/placeholder.svg',
+        user_id: 1,
+        uploaded_by: 'Admin User',
+        created_at: new Date().toISOString(),
+      };
+      
+      setGalleryImages([newImage, ...galleryImages]);
+      
+      toast.success('Image uploaded successfully');
+      setTitle('');
+      setDescription('');
+      setSelectedImage(null);
+      setImagePreview(null);
+      setIsAddDialogOpen(false);
+      setIsUploading(false);
+    }, 1500);
+  };
+
+  const handleDelete = (imageId: number) => {
+    setDeleteInProgress(imageId);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setGalleryImages(galleryImages.filter(img => img.id !== imageId));
+      setDeleteInProgress(null);
+      toast.success('Image deleted successfully');
+    }, 1000);
   };
 
   return (
@@ -151,6 +114,16 @@ const GalleryManager = () => {
                     onChange={handleImageChange}
                     required
                   />
+                  
+                  {imagePreview && (
+                    <div className="mt-2 relative w-full h-40 bg-gray-100 rounded overflow-hidden">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid w-full gap-1.5">
@@ -193,11 +166,7 @@ const GalleryManager = () => {
         </Dialog>
       </div>
       
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : !images || images.length === 0 ? (
+      {galleryImages.length === 0 ? (
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-8 text-center">
           <Image className="h-10 w-10 mx-auto text-gray-400 mb-2" />
           <h3 className="text-lg font-medium">No images yet</h3>
@@ -211,11 +180,13 @@ const GalleryManager = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {images.map((image) => (
+          {galleryImages.map((image) => (
             <Card key={image.id} className="overflow-hidden group">
               <div className="relative h-48">
                 <img
-                  src={`${API_URL}${image.image_path}`}
+                  src={typeof image.image_path === 'string' && image.image_path.startsWith('/') 
+                    ? image.image_path 
+                    : image.image_path}
                   alt={image.title || 'Gallery image'}
                   className="w-full h-full object-cover"
                 />
@@ -223,7 +194,7 @@ const GalleryManager = () => {
                   variant="destructive"
                   size="icon"
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => deleteMutation.mutate(image.id)}
+                  onClick={() => handleDelete(image.id)}
                   disabled={deleteInProgress === image.id}
                 >
                   {deleteInProgress === image.id ? (
@@ -237,7 +208,7 @@ const GalleryManager = () => {
                 {image.title && <h3 className="font-medium">{image.title}</h3>}
                 {image.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{image.description}</p>}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Uploaded by {image.uploaded_by}
+                  Uploaded by {image.uploaded_by} on {format(new Date(image.created_at), "MMM d, yyyy")}
                 </p>
               </CardContent>
             </Card>

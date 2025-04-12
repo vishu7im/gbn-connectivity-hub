@@ -11,13 +11,16 @@ import EventsManager from '@/components/admin/EventsManager';
 import DashboardStats from '@/components/admin/DashboardStats';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Users, Image, Newspaper, Calendar, LayoutDashboard } from 'lucide-react';
+import { Loader2, Users, Image, Newspaper, Calendar, LayoutDashboard, PieChart, BarChart2, UserCheck, UserX, Shield } from 'lucide-react';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import { mockAdminData } from '@/data/mockAdminData';
 
 const API_URL = "http://localhost:5000/api";
 
 const AdminPanel = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // For development, always consider the user an admin
   const isAdmin = true;
@@ -34,108 +37,151 @@ const AdminPanel = () => {
     );
   }
 
-  // Remove the unnecessary useQuery for admin check - we're bypassing it for development
+  // Use mock data for the admin panel
+  const adminData = mockAdminData;
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold tracking-tight mb-3 bg-gradient-to-r from-purple-700 to-blue-500 text-transparent bg-clip-text">Admin Panel</h1>
-        <p className="text-muted-foreground mb-6">Manage users, content, and monitor site activity</p>
+      <div className="flex h-[calc(100vh-4rem)]">
+        <AdminSidebar open={sidebarOpen} setOpen={setSidebarOpen} activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8 bg-gray-100 p-1 rounded-lg">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="user-verification" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="gallery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Image className="h-4 w-4" />
-              <span className="hidden sm:inline">Gallery</span>
-            </TabsTrigger>
-            <TabsTrigger value="news" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Newspaper className="h-4 w-4" />
-              <span className="hidden sm:inline">News</span>
-            </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Events</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="mt-0">
-            <Card className="border-none shadow-md bg-white">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                <CardTitle className="text-xl text-gray-800">Dashboard Overview</CardTitle>
-                <CardDescription>
-                  Key metrics and statistics for the alumni portal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <DashboardStats />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="user-verification" className="mt-0">
-            <Card className="border-none shadow-md bg-white">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                <CardTitle className="text-xl text-gray-800">User Verification</CardTitle>
-                <CardDescription>
-                  Review and verify pending alumni accounts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <UserVerificationTable />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="gallery" className="mt-0">
-            <Card className="border-none shadow-md bg-white">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                <CardTitle className="text-xl text-gray-800">Gallery Management</CardTitle>
-                <CardDescription>
-                  Upload and organize images for the alumni gallery
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <GalleryManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="news" className="mt-0">
-            <Card className="border-none shadow-md bg-white">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                <CardTitle className="text-xl text-gray-800">News Management</CardTitle>
-                <CardDescription>
-                  Publish and edit news articles for alumni
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <NewsManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="events" className="mt-0">
-            <Card className="border-none shadow-md bg-white">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                <CardTitle className="text-xl text-gray-800">Events Management</CardTitle>
-                <CardDescription>
-                  Create and manage alumni events
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <EventsManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <div className={`transition-all duration-300 flex-1 overflow-auto ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+          <div className="container mx-auto py-8 px-4">
+            <h1 className="text-3xl font-bold tracking-tight mb-3 bg-gradient-to-r from-purple-700 to-blue-500 text-transparent bg-clip-text">Admin Panel</h1>
+            <p className="text-muted-foreground mb-6">Manage users, content, and monitor site activity</p>
+            
+            <TabsContent value="dashboard" className={`mt-0 ${activeTab === 'dashboard' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Dashboard Overview</CardTitle>
+                  <CardDescription>
+                    Key metrics and statistics for the alumni portal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <DashboardStats data={adminData.dashboardStats} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="user-verification" className={`mt-0 ${activeTab === 'user-verification' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">User Verification</CardTitle>
+                  <CardDescription>
+                    Review and verify pending alumni accounts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <UserVerificationTable users={adminData.pendingUsers} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="gallery" className={`mt-0 ${activeTab === 'gallery' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Gallery Management</CardTitle>
+                  <CardDescription>
+                    Upload and organize images for the alumni gallery
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <GalleryManager images={adminData.galleryImages} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="news" className={`mt-0 ${activeTab === 'news' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">News Management</CardTitle>
+                  <CardDescription>
+                    Publish and edit news articles for alumni
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <NewsManager newsItems={adminData.newsItems} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="events" className={`mt-0 ${activeTab === 'events' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Events Management</CardTitle>
+                  <CardDescription>
+                    Create and manage alumni events
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <EventsManager events={adminData.events} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className={`mt-0 ${activeTab === 'analytics' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Analytics Dashboard</CardTitle>
+                  <CardDescription>
+                    Site traffic and user engagement metrics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">User Activity</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <BarChart2 className="h-40 w-full text-muted-foreground mb-4" />
+                        <p className="text-sm text-muted-foreground">Simulated chart data - would display user logins over time</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Content Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <PieChart className="h-40 w-full text-muted-foreground mb-4" />
+                        <p className="text-sm text-muted-foreground">Simulated chart data - would show content type distribution</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="users-blocked" className={`mt-0 ${activeTab === 'users-blocked' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Blocked Users</CardTitle>
+                  <CardDescription>
+                    Manage blocked user accounts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <UserVerificationTable users={adminData.blockedUsers} isBlockedList={true} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="users-rejected" className={`mt-0 ${activeTab === 'users-rejected' ? 'block' : 'hidden'}`}>
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
+                  <CardTitle className="text-xl text-gray-800">Rejected Users</CardTitle>
+                  <CardDescription>
+                    View and manage rejected account requests
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <UserVerificationTable users={adminData.rejectedUsers} isRejectedList={true} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
