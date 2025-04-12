@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -93,7 +92,11 @@ const AdminPanel = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    <AllUsersTable users={adminData.allUsers || []} />
+                    <AllUsersTable users={adminData.allUsers.map(user => ({
+                      ...user,
+                      email: user.email || `${user.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+                      isVerified: typeof user.isVerified === 'boolean' ? user.isVerified : true
+                    }))} />
                   </CardContent>
                 </Card>
               </TabsContent>

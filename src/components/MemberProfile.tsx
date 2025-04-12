@@ -72,7 +72,7 @@ const MemberProfile: React.FC<MemberProfileProps> = ({ memberId }) => {
   };
 
   // Don't show messaging tab if viewing your own profile
-  const isOwnProfile = user && user.id === memberId;
+  const isOwnProfile = user && user.id === memberId.toString();
 
   return (
     <div className="space-y-6">

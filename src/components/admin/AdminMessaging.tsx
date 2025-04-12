@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,8 +22,11 @@ const AdminMessaging = () => {
   useEffect(() => {
     if (selectedConversation) {
       const conversationKey = getConversationKey(
-        user?.id || 1, // Assuming admin is user ID 1
-        selectedConversation.participants.find((id: number) => id !== (user?.id || 1))
+        typeof user?.id === 'string' ? parseInt(user.id, 10) : (user?.id || 1), // Convert string ID to number
+        selectedConversation.participants.find((id: number) => {
+          const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : (user?.id || 1);
+          return id !== userId;
+        })
       );
       
       setMessages(messagesData[conversationKey] || []);
@@ -32,13 +34,15 @@ const AdminMessaging = () => {
   }, [selectedConversation, user]);
   
   const filteredConversations = conversations.filter(conv => {
-    const otherParticipantId = conv.participants.find(id => id !== (user?.id || 1));
+    const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : (user?.id || 1);
+    const otherParticipantId = conv.participants.find(id => id !== userId);
     const otherParticipant = alumniData.find(u => u.id === otherParticipantId);
     return otherParticipant?.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
   
   const getOtherParticipant = (conv: any) => {
-    const otherParticipantId = conv.participants.find(id => id !== (user?.id || 1));
+    const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : (user?.id || 1);
+    const otherParticipantId = conv.participants.find(id => id !== userId);
     return alumniData.find(u => u.id === otherParticipantId);
   };
   

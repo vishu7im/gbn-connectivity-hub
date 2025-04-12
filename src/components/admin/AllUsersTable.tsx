@@ -32,8 +32,8 @@ interface User {
   email: string;
   batch: string;
   department: string;
-  company: string;
-  currentRole: string;
+  company?: string;
+  currentRole?: string;
   isVerified: boolean;
   status?: string;
 }
@@ -48,16 +48,26 @@ const AllUsersTable: React.FC<AllUsersTableProps> = ({ users }) => {
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [messageText, setMessageText] = useState("");
   
-  // If no users provided, use alumniData as fallback
-  const allUsers = users.length > 0 ? users : alumniData;
+  // Ensure all users have email and isVerified properties
+  const allUsers = users.length > 0 
+    ? users.map(user => ({
+        ...user,
+        email: user.email || `${user.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+        isVerified: typeof user.isVerified === 'boolean' ? user.isVerified : true
+      }))
+    : alumniData.map(user => ({
+        ...user,
+        email: `${user.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+        isVerified: true
+      }));
   
   const filteredUsers = allUsers.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.batch.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.currentRole?.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.company && user.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.currentRole && user.currentRole.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   const handleSendMessage = () => {
