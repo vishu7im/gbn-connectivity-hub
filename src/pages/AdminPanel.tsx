@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,14 +19,9 @@ const AdminPanel = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  // Simplified admin check - always return true for development
-  const { data: isAdmin, isLoading: checkingAdmin } = useQuery({
-    queryKey: ['isAdmin'],
-    queryFn: async () => {
-      // For development, always return true to bypass admin check
-      return true;
-    },
-  });
+  // For development, always consider the user an admin
+  const isAdmin = true;
+  const checkingAdmin = false;
 
   if (checkingAdmin) {
     return (
@@ -39,6 +33,8 @@ const AdminPanel = () => {
       </DashboardLayout>
     );
   }
+
+  // Remove the unnecessary useQuery for admin check - we're bypassing it for development
 
   return (
     <DashboardLayout>

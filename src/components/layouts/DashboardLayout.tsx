@@ -23,8 +23,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
-    // Redirect to login page if not authenticated
+  // For admin panel, don't redirect even if user is not authenticated
+  const currentPath = window.location.pathname;
+  if (!user && currentPath !== '/admin') {
+    // Redirect to login page if not authenticated and not on admin page
     navigate('/login', { replace: true });
     return null;
   }
