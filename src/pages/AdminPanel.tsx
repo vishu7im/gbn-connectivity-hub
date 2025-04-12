@@ -11,9 +11,28 @@ import EventsManager from '@/components/admin/EventsManager';
 import DashboardStats from '@/components/admin/DashboardStats';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Users, Image, Newspaper, Calendar, LayoutDashboard, PieChart, BarChart2, UserCheck, UserX, Shield } from 'lucide-react';
+import { 
+  Loader2, 
+  Users, 
+  Image, 
+  Newspaper, 
+  Calendar, 
+  LayoutDashboard, 
+  PieChart, 
+  BarChart2, 
+  UserCheck, 
+  UserX, 
+  Shield,
+  MessageSquare,
+  Settings,
+  User
+} from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { mockAdminData } from '@/data/mockAdminData';
+import AllUsersTable from '@/components/admin/AllUsersTable';
+import AdminMessaging from '@/components/admin/AdminMessaging';
+import AdminAccountSettings from '@/components/admin/AdminAccountSettings';
+import GlobalMessages from '@/components/admin/GlobalMessages';
 
 const API_URL = "http://localhost:5000/api";
 
@@ -52,10 +71,10 @@ const AdminPanel = () => {
             
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsContent value="dashboard" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Dashboard Overview</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Dashboard Overview</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Key metrics and statistics for the alumni portal
                     </CardDescription>
                   </CardHeader>
@@ -65,11 +84,25 @@ const AdminPanel = () => {
                 </Card>
               </TabsContent>
               
+              <TabsContent value="all-users" className="mt-0">
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">All Users</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
+                      View and manage all registered users
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <AllUsersTable users={adminData.allUsers || []} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
               <TabsContent value="user-verification" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">User Verification</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">User Verification</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Review and verify pending alumni accounts
                     </CardDescription>
                   </CardHeader>
@@ -80,10 +113,10 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="gallery" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Gallery Management</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Gallery Management</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Upload and organize images for the alumni gallery
                     </CardDescription>
                   </CardHeader>
@@ -94,10 +127,10 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="news" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">News Management</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">News Management</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Publish and edit news articles for alumni
                     </CardDescription>
                   </CardHeader>
@@ -108,10 +141,10 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="events" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Events Management</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Events Management</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Create and manage alumni events
                     </CardDescription>
                   </CardHeader>
@@ -121,28 +154,56 @@ const AdminPanel = () => {
                 </Card>
               </TabsContent>
               
+              <TabsContent value="messages" className="mt-0">
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Admin Messaging</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
+                      Send and receive messages with users
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <AdminMessaging />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="global-messages" className="mt-0">
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Global Messages</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
+                      View messages submitted through the Contact Us form
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <GlobalMessages />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
               <TabsContent value="analytics" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Analytics Dashboard</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Analytics Dashboard</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Site traffic and user engagement metrics
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
+                      <Card className="dark:bg-slate-900 dark:border-slate-700">
                         <CardHeader>
-                          <CardTitle className="text-lg">User Activity</CardTitle>
+                          <CardTitle className="text-lg dark:text-gray-100">User Activity</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <BarChart2 className="h-40 w-full text-muted-foreground mb-4" />
                           <p className="text-sm text-muted-foreground">Simulated chart data - would display user logins over time</p>
                         </CardContent>
                       </Card>
-                      <Card>
+                      <Card className="dark:bg-slate-900 dark:border-slate-700">
                         <CardHeader>
-                          <CardTitle className="text-lg">Content Distribution</CardTitle>
+                          <CardTitle className="text-lg dark:text-gray-100">Content Distribution</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <PieChart className="h-40 w-full text-muted-foreground mb-4" />
@@ -155,10 +216,10 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="users-blocked" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Blocked Users</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Blocked Users</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       Manage blocked user accounts
                     </CardDescription>
                   </CardHeader>
@@ -169,15 +230,29 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="users-rejected" className="mt-0">
-                <Card className="border-none shadow-md bg-white">
-                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-t-lg">
-                    <CardTitle className="text-xl text-gray-800">Rejected Users</CardTitle>
-                    <CardDescription>
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Rejected Users</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
                       View and manage rejected account requests
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <UserVerificationTable users={adminData.rejectedUsers} isRejectedList={true} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="settings" className="mt-0">
+                <Card className="border-none shadow-md bg-white dark:bg-slate-800">
+                  <CardHeader className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+                    <CardTitle className="text-xl text-gray-800 dark:text-gray-100">Admin Account Settings</CardTitle>
+                    <CardDescription className="dark:text-gray-300">
+                      Manage your admin account credentials
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <AdminAccountSettings />
                   </CardContent>
                 </Card>
               </TabsContent>

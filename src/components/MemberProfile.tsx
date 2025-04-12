@@ -3,10 +3,12 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Building, GraduationCap, MapPin, Mail, Phone, Linkedin, Facebook } from "lucide-react";
+import { Building, GraduationCap, MapPin, Mail, Phone, Linkedin, Facebook, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import PostsFeed from "@/components/PostsFeed";
 import { alumniData } from "@/data/alumniData";
+import MessengerChat from "@/components/MessengerChat";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MemberProfileProps {
   memberId: number;
@@ -15,6 +17,7 @@ interface MemberProfileProps {
 const MemberProfile: React.FC<MemberProfileProps> = ({ memberId }) => {
   const [member, setMember] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     // In a real app, this would be an API call
@@ -68,6 +71,9 @@ const MemberProfile: React.FC<MemberProfileProps> = ({ memberId }) => {
       .toUpperCase();
   };
 
+  // Don't show messaging tab if viewing your own profile
+  const isOwnProfile = user && user.id === memberId;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -109,6 +115,7 @@ const MemberProfile: React.FC<MemberProfileProps> = ({ memberId }) => {
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
               <TabsTrigger value="about">About</TabsTrigger>
+              {!isOwnProfile && user && <TabsTrigger value="message">Message</TabsTrigger>}
             </TabsList>
             <TabsContent value="posts">
               <PostsFeed userId={member.id} />
@@ -176,6 +183,21 @@ const MemberProfile: React.FC<MemberProfileProps> = ({ memberId }) => {
                 </div>
               </div>
             </TabsContent>
+            {!isOwnProfile && user && (
+              <TabsContent value="message">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="mb-4 flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Send a Message</h3>
+                    </div>
+                    <div className="h-[400px] border rounded-md">
+                      <MessengerChat recipientId={member.id} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
         </CardContent>
       </Card>

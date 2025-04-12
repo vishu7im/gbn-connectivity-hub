@@ -13,7 +13,9 @@ import {
   UserX,
   Shield,
   MessageSquare,
-  Settings
+  Settings,
+  User,
+  Mail
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,9 +38,17 @@ const AdminSidebar = ({ open, setOpen, activeTab, setActiveTab }: AdminSidebarPr
     {
       group: "User Management",
       items: [
+        { id: "all-users", label: "All Users", icon: Users },
         { id: "user-verification", label: "Pending Users", icon: UserCheck },
         { id: "users-rejected", label: "Rejected Users", icon: UserX },
         { id: "users-blocked", label: "Blocked Users", icon: Shield },
+      ],
+    },
+    {
+      group: "Communication",
+      items: [
+        { id: "messages", label: "Messaging", icon: MessageSquare },
+        { id: "global-messages", label: "Contact Messages", icon: Mail },
       ],
     },
     {
@@ -50,10 +60,9 @@ const AdminSidebar = ({ open, setOpen, activeTab, setActiveTab }: AdminSidebarPr
       ],
     },
     {
-      group: "Other",
+      group: "Admin",
       items: [
-        { id: "messages", label: "Messages", icon: MessageSquare },
-        { id: "settings", label: "Settings", icon: Settings },
+        { id: "settings", label: "Account Settings", icon: Settings },
       ],
     },
   ];
@@ -61,14 +70,14 @@ const AdminSidebar = ({ open, setOpen, activeTab, setActiveTab }: AdminSidebarPr
   return (
     <div
       className={cn(
-        "h-full bg-slate-900 text-white fixed left-0 top-16 z-10 transition-all duration-300",
+        "h-full bg-slate-900 text-white fixed left-0 top-16 z-10 transition-all duration-300 dark:bg-slate-950",
         open ? "w-64" : "w-20"
       )}
     >
       <div className="absolute -right-3 top-20">
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-full bg-slate-900 p-1 text-white shadow-md"
+          className="rounded-full bg-slate-900 p-1 text-white shadow-md dark:bg-slate-950"
         >
           {open ? (
             <ChevronLeft className="h-5 w-5" />

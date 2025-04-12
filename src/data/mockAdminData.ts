@@ -1,381 +1,235 @@
 
-// Mock data for admin panel
+import { alumniData } from './alumniData';
 
-export interface DashboardStatsType {
-  totalUsers: number;
-  pendingUsers: number;
-  rejectedUsers: number;
-  activeUsers: number;
-  totalPosts: number;
-  totalJobs: number;
-  totalGalleryImages: number;
-  totalEvents: number;
-  totalNews: number;
-  dailyVisits: { date: string; count: number }[];
-  postsByMonth: { month: string; count: number }[];
-}
-
-export interface UserType {
-  _id: string;
-  name: string;
-  email: string;
-  batch: string;
-  department: string;
-  createdAt: string;
-  status?: 'pending' | 'approved' | 'rejected' | 'blocked';
-}
-
-export interface GalleryImageType {
-  id: number;
-  title: string | null;
-  description: string | null;
-  image_path: string;
-  user_id: number;
-  uploaded_by: string;
-  created_at: string;
-}
-
-export interface NewsItemType {
-  _id: string;
-  title: string;
-  content: string;
-  imageUrl?: string;
-  isImportant: boolean;
-  createdAt: string;
-  user: {
-    name: string;
-    email: string;
-  };
-}
-
-export interface EventType {
-  id: number;
-  title: string;
-  description: string;
-  event_date: string;
-  location: string;
-  registration_link: string | null;
-  image: string | null;
-  organizer_name: string;
-}
-
-export interface MockAdminDataType {
-  dashboardStats: DashboardStatsType;
-  pendingUsers: UserType[];
-  rejectedUsers: UserType[];
-  blockedUsers: UserType[];
-  galleryImages: GalleryImageType[];
-  newsItems: NewsItemType[];
-  events: EventType[];
-}
-
-// Mock dashboard stats
-const dashboardStats: DashboardStatsType = {
-  totalUsers: 1245,
-  pendingUsers: 32,
-  rejectedUsers: 18,
-  activeUsers: 823,
-  totalPosts: 456,
-  totalJobs: 57,
-  totalGalleryImages: 278,
-  totalEvents: 35,
-  totalNews: 89,
-  dailyVisits: [
-    { date: "2025-04-01", count: 145 },
-    { date: "2025-04-02", count: 132 },
-    { date: "2025-04-03", count: 167 },
-    { date: "2025-04-04", count: 156 },
-    { date: "2025-04-05", count: 123 },
-    { date: "2025-04-06", count: 110 },
-    { date: "2025-04-07", count: 143 },
-    { date: "2025-04-08", count: 155 },
-    { date: "2025-04-09", count: 168 },
-    { date: "2025-04-10", count: 172 },
-    { date: "2025-04-11", count: 163 },
-    { date: "2025-04-12", count: 147 },
+export const mockAdminData = {
+  // Dashboard statistics
+  dashboardStats: {
+    totalUsers: 150,
+    newUsers: 12,
+    pendingVerifications: 8,
+    activeUsers: 86,
+    totalPosts: 327,
+    totalEvents: 15,
+    totalGalleryItems: 48,
+    postsThisMonth: 24,
+    analytics: {
+      userGrowth: [
+        { month: 'Jan', users: 110 },
+        { month: 'Feb', users: 120 },
+        { month: 'Mar', users: 130 },
+        { month: 'Apr', users: 140 },
+        { month: 'May', users: 150 }
+      ],
+      engagement: [
+        { category: 'Posts', value: 327 },
+        { category: 'Comments', value: 945 },
+        { category: 'Events', value: 15 },
+        { category: 'Gallery', value: 48 }
+      ]
+    }
+  },
+  
+  // All registered users
+  allUsers: alumniData,
+  
+  // Pending user verification requests
+  pendingUsers: [
+    {
+      id: 101,
+      name: "Rakesh Kumar",
+      email: "rakesh.kumar@example.com",
+      phone: "+91 98765 43210",
+      batch: "2015",
+      department: "Computer Science",
+      rollNumber: "CS-2015-42",
+      createdAt: "2023-05-10T15:30:00",
+      verificationDocuments: ["degree_certificate.pdf", "id_proof.pdf"]
+    },
+    {
+      id: 102,
+      name: "Sunita Patel",
+      email: "sunita.patel@example.com",
+      phone: "+91 87654 32109",
+      batch: "2018",
+      department: "Electronics",
+      rollNumber: "EC-2018-21",
+      createdAt: "2023-05-12T09:15:00",
+      verificationDocuments: ["degree_certificate.pdf"]
+    },
+    {
+      id: 103,
+      name: "Vikram Singh",
+      email: "vikram.singh@example.com",
+      phone: "+91 76543 21098",
+      batch: "2016",
+      department: "Mechanical",
+      rollNumber: "ME-2016-33",
+      createdAt: "2023-05-14T11:45:00",
+      verificationDocuments: ["student_id.pdf", "degree_certificate.pdf"]
+    }
   ],
-  postsByMonth: [
-    { month: "Nov 2024", count: 34 },
-    { month: "Dec 2024", count: 42 },
-    { month: "Jan 2025", count: 51 },
-    { month: "Feb 2025", count: 48 },
-    { month: "Mar 2025", count: 65 },
-    { month: "Apr 2025", count: 73 },
+  
+  // Rejected users
+  rejectedUsers: [
+    {
+      id: 201,
+      name: "Karan Malhotra",
+      email: "karan.malhotra@example.com",
+      batch: "2019",
+      department: "Civil Engineering",
+      rollNumber: "CE-2019-15",
+      createdAt: "2023-04-25T10:30:00",
+      rejectionReason: "Unable to verify student records. Please provide additional documentation."
+    },
+    {
+      id: 202,
+      name: "Neha Sharma",
+      email: "neha.sharma@example.com",
+      batch: "2017",
+      department: "Computer Science",
+      rollNumber: "CS-2017-56",
+      createdAt: "2023-04-28T14:20:00",
+      rejectionReason: "Submitted documents do not match our records. Please contact the admin office."
+    }
   ],
-};
-
-// Mock pending users
-const pendingUsers: UserType[] = [
-  {
-    _id: "p1",
-    name: "Rahul Sharma",
-    email: "rahul.sharma@example.com",
-    batch: "2020",
-    department: "Computer Science",
-    createdAt: "2025-04-02T10:23:45.000Z",
-    status: "pending",
-  },
-  {
-    _id: "p2",
-    name: "Priya Patel",
-    email: "priya.patel@example.com",
-    batch: "2019",
-    department: "Electrical Engineering",
-    createdAt: "2025-04-03T09:15:22.000Z",
-    status: "pending",
-  },
-  {
-    _id: "p3",
-    name: "Arjun Singh",
-    email: "arjun.singh@example.com",
-    batch: "2021",
-    department: "Mechanical Engineering",
-    createdAt: "2025-04-05T14:45:11.000Z",
-    status: "pending",
-  },
-  {
-    _id: "p4",
-    name: "Sneha Gupta",
-    email: "sneha.gupta@example.com",
-    batch: "2018",
-    department: "Civil Engineering",
-    createdAt: "2025-04-08T16:30:05.000Z",
-    status: "pending",
-  },
-  {
-    _id: "p5",
-    name: "Vikram Reddy",
-    email: "vikram.reddy@example.com",
-    batch: "2022",
-    department: "Electronics",
-    createdAt: "2025-04-10T11:20:33.000Z",
-    status: "pending",
-  },
-];
-
-// Mock rejected users
-const rejectedUsers: UserType[] = [
-  {
-    _id: "r1",
-    name: "Fake Name",
-    email: "fake.name@example.com",
-    batch: "2020",
-    department: "Computer Science",
-    createdAt: "2025-03-15T10:23:45.000Z",
-    status: "rejected",
-  },
-  {
-    _id: "r2",
-    name: "Invalid User",
-    email: "invalid.user@example.com",
-    batch: "2018",
-    department: "Mechanical Engineering",
-    createdAt: "2025-03-22T14:33:12.000Z",
-    status: "rejected",
-  },
-  {
-    _id: "r3",
-    name: "Not Alumni",
-    email: "not.alumni@example.com",
-    batch: "2019",
-    department: "Electronics",
-    createdAt: "2025-04-01T09:45:30.000Z",
-    status: "rejected",
-  },
-];
-
-// Mock blocked users
-const blockedUsers: UserType[] = [
-  {
-    _id: "b1",
-    name: "Spam User",
-    email: "spam.user@example.com",
-    batch: "2017",
-    department: "Computer Science",
-    createdAt: "2025-01-10T08:12:45.000Z",
-    status: "blocked",
-  },
-  {
-    _id: "b2",
-    name: "Inappropriate Posts",
-    email: "inappropriate@example.com",
-    batch: "2016",
-    department: "Civil Engineering",
-    createdAt: "2025-02-05T16:44:22.000Z",
-    status: "blocked",
-  },
-];
-
-// Mock gallery images
-const galleryImages: GalleryImageType[] = [
-  {
-    id: 1,
-    title: "Annual Alumni Meet 2025",
-    description: "Highlights from our annual alumni gathering",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-03-12T14:22:35.000Z",
-  },
-  {
-    id: 2,
-    title: "Technology Symposium",
-    description: "Alumni presenting at the tech symposium",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-03-15T11:34:12.000Z",
-  },
-  {
-    id: 3,
-    title: "Campus Tour",
-    description: "Alumni visiting the renovated campus",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-03-20T10:15:45.000Z",
-  },
-  {
-    id: 4,
-    title: "Awards Ceremony",
-    description: "Distinguished alumni awards ceremony",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-04-02T16:55:30.000Z",
-  },
-  {
-    id: 5,
-    title: "Sports Tournament",
-    description: "Inter-batch cricket tournament",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-04-05T09:23:41.000Z",
-  },
-  {
-    id: 6,
-    title: "Graduation Day 2025",
-    description: "Convocation ceremony for the batch of 2025",
-    image_path: "/placeholder.svg",
-    user_id: 1,
-    uploaded_by: "Admin User",
-    created_at: "2025-04-10T15:42:18.000Z",
-  },
-];
-
-// Mock news items
-const newsItems: NewsItemType[] = [
-  {
-    _id: "n1",
-    title: "Alumni Association Launches New Mentorship Program",
-    content: "The Alumni Association is proud to announce the launch of a new mentorship program that connects current students with alumni from their field of study. This initiative aims to provide valuable guidance, networking opportunities, and professional development for our students.",
-    imageUrl: "/placeholder.svg",
-    isImportant: true,
-    createdAt: "2025-04-05T10:15:00.000Z",
-    user: {
-      name: "Admin User",
-      email: "admin@example.com"
+  
+  // Blocked users
+  blockedUsers: [
+    {
+      id: 301,
+      name: "Rohit Joshi",
+      email: "rohit.joshi@example.com",
+      batch: "2014",
+      department: "Electrical Engineering",
+      lastActive: "2023-05-02T16:45:00",
+      blockReason: "Inappropriate content and behavior. Multiple violations of community guidelines.",
+      blockedAt: "2023-05-03T09:30:00"
     }
-  },
-  {
-    _id: "n2",
-    title: "Annual Alumni Meet Scheduled for June 15th",
-    content: "We're excited to announce that our Annual Alumni Meet will take place on June 15th, 2025. This event will feature networking sessions, panel discussions, and a gala dinner. Registration is now open on our website.",
-    imageUrl: "/placeholder.svg",
-    isImportant: true,
-    createdAt: "2025-04-02T14:30:00.000Z",
-    user: {
-      name: "Admin User",
-      email: "admin@example.com"
+  ],
+  
+  // Gallery images
+  galleryImages: [
+    {
+      id: 1,
+      url: "https://source.unsplash.com/random/800x600/?campus",
+      title: "Campus Main Building",
+      description: "A view of our beautiful campus main building during spring",
+      category: "Campus",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-04-10T10:30:00"
+    },
+    {
+      id: 2,
+      url: "https://source.unsplash.com/random/800x600/?graduation",
+      title: "Graduation Day 2023",
+      description: "Students celebrating their graduation day",
+      category: "Events",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-05-15T14:45:00"
+    },
+    {
+      id: 3,
+      url: "https://source.unsplash.com/random/800x600/?library",
+      title: "Central Library",
+      description: "Students studying in the central library",
+      category: "Campus",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-04-22T11:15:00"
+    },
+    {
+      id: 4,
+      url: "https://source.unsplash.com/random/800x600/?classroom",
+      title: "Modern Classroom",
+      description: "One of our newly renovated smart classrooms",
+      category: "Campus",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-05-05T09:30:00"
+    },
+    {
+      id: 5,
+      url: "https://source.unsplash.com/random/800x600/?alumni",
+      title: "Alumni Meet 2023",
+      description: "Alumni networking during the annual meet",
+      category: "Events",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-05-20T16:00:00"
+    },
+    {
+      id: 6,
+      url: "https://source.unsplash.com/random/800x600/?laboratory",
+      title: "Research Laboratory",
+      description: "State-of-the-art research facilities",
+      category: "Campus",
+      uploadedBy: "Admin",
+      uploadedAt: "2023-04-18T13:20:00"
     }
-  },
-  {
-    _id: "n3",
-    title: "Alumni Donations Fund New Research Center",
-    content: "Thanks to the generous donations from our alumni, we are pleased to announce the establishment of a new Advanced Research Center that will focus on cutting-edge technologies and innovation. The center is expected to open in September 2025.",
-    imageUrl: "/placeholder.svg",
-    isImportant: false,
-    createdAt: "2025-03-28T09:45:00.000Z",
-    user: {
-      name: "Admin User",
-      email: "admin@example.com"
+  ],
+  
+  // News items
+  newsItems: [
+    {
+      id: 1,
+      title: "Annual Alumni Meet Announced",
+      content: "We are excited to announce our Annual Alumni Meet scheduled for June 15, 2023. This year's theme is 'Reconnect and Inspire'. Register now to secure your spot!",
+      author: "Alumni Committee",
+      publishedAt: "2023-05-01T09:00:00",
+      image: "https://source.unsplash.com/random/800x600/?meeting",
+      category: "Events"
+    },
+    {
+      id: 2,
+      title: "Alumni Achievement: Dr. Rajesh Kumar Wins National Award",
+      content: "We are proud to announce that our alumnus, Dr. Rajesh Kumar (Batch of 2005, Computer Science) has been awarded the National Science Award for his contributions to Artificial Intelligence.",
+      author: "Alumni Office",
+      publishedAt: "2023-05-10T11:30:00",
+      image: "https://source.unsplash.com/random/800x600/?award",
+      category: "Achievements"
+    },
+    {
+      id: 3,
+      title: "New Scholarship Fund for Underprivileged Students",
+      content: "The Alumni Association has established a new scholarship fund to support underprivileged students. Alumni are encouraged to contribute to this noble cause.",
+      author: "Scholarship Committee",
+      publishedAt: "2023-05-15T14:45:00",
+      image: "https://source.unsplash.com/random/800x600/?scholarship",
+      category: "Initiatives"
     }
-  },
-  {
-    _id: "n4",
-    title: "Alumni Achievement: Dr. Rajan Kumar Wins Prestigious Award",
-    content: "We are proud to announce that our alumnus, Dr. Rajan Kumar (Batch of 2010), has been awarded the National Science Award for his groundbreaking research in renewable energy. This recognition highlights the excellence of our alumni community.",
-    imageUrl: "/placeholder.svg",
-    isImportant: false,
-    createdAt: "2025-03-22T16:20:00.000Z",
-    user: {
-      name: "Admin User",
-      email: "admin@example.com"
+  ],
+  
+  // Events
+  events: [
+    {
+      id: 1,
+      title: "Annual Alumni Meet 2023",
+      description: "Join us for a day of networking, reminiscing, and celebration with fellow alumni.",
+      date: "2023-06-15T09:00:00",
+      endDate: "2023-06-15T18:00:00",
+      location: "Main Campus Auditorium",
+      registrationLink: "https://example.com/register",
+      image: "https://source.unsplash.com/random/800x600/?event",
+      organizer: "Alumni Association"
+    },
+    {
+      id: 2,
+      title: "Career Guidance Webinar",
+      description: "Industry experts and successful alumni share insights on career opportunities and professional growth.",
+      date: "2023-06-25T15:00:00",
+      endDate: "2023-06-25T17:00:00",
+      location: "Online (Zoom)",
+      registrationLink: "https://example.com/register-webinar",
+      image: "https://source.unsplash.com/random/800x600/?webinar",
+      organizer: "Career Development Cell"
+    },
+    {
+      id: 3,
+      title: "Alumni Sports Tournament",
+      description: "Annual sports competition featuring cricket, football, basketball, and more.",
+      date: "2023-07-08T08:00:00",
+      endDate: "2023-07-09T18:00:00",
+      location: "Campus Sports Complex",
+      registrationLink: "https://example.com/register-sports",
+      image: "https://source.unsplash.com/random/800x600/?sports",
+      organizer: "Alumni Sports Committee"
     }
-  },
-];
-
-// Mock events
-const events: EventType[] = [
-  {
-    id: 1,
-    title: "Annual Alumni Meet 2025",
-    description: "Join us for a day of networking, reminiscing, and celebrating our alma mater. The event will include keynote speeches, panel discussions, and opportunities to reconnect with old friends and faculty members.",
-    event_date: "2025-06-15T09:00:00.000Z",
-    location: "University Main Auditorium",
-    registration_link: "https://example.com/register/alumni-meet-2025",
-    image: "/placeholder.svg",
-    organizer_name: "Alumni Association"
-  },
-  {
-    id: 2,
-    title: "Career Counseling Workshop",
-    description: "A special workshop for current students with alumni from various industries providing guidance on career paths, job market trends, and professional development opportunities.",
-    event_date: "2025-05-10T14:00:00.000Z",
-    location: "Engineering Block, Room 305",
-    registration_link: "https://example.com/register/career-workshop",
-    image: "/placeholder.svg",
-    organizer_name: "Alumni Career Cell"
-  },
-  {
-    id: 3,
-    title: "Technology Symposium",
-    description: "A technology symposium featuring presentations from alumni working in cutting-edge tech companies and research institutions. Learn about the latest trends and innovations in technology.",
-    event_date: "2025-07-05T10:00:00.000Z",
-    location: "Computer Science Department",
-    registration_link: "https://example.com/register/tech-symposium",
-    image: "/placeholder.svg",
-    organizer_name: "Tech Alumni Chapter"
-  },
-  {
-    id: 4,
-    title: "Alumni Sports Tournament",
-    description: "An inter-batch sports tournament featuring cricket, football, and basketball. Come participate or cheer for your batch in this fun-filled event.",
-    event_date: "2025-08-20T08:00:00.000Z",
-    location: "University Sports Complex",
-    registration_link: "https://example.com/register/sports-tournament",
-    image: "/placeholder.svg",
-    organizer_name: "Sports Committee"
-  },
-  {
-    id: 5,
-    title: "Entrepreneurship Summit",
-    description: "A summit for aspiring entrepreneurs featuring talks and mentoring sessions from successful alumni entrepreneurs. Learn about starting and scaling businesses from those who've done it.",
-    event_date: "2025-09-12T11:00:00.000Z",
-    location: "Business School Auditorium",
-    registration_link: "https://example.com/register/entrepreneurship-summit",
-    image: "/placeholder.svg",
-    organizer_name: "Entrepreneurship Cell"
-  },
-];
-
-export const mockAdminData: MockAdminDataType = {
-  dashboardStats,
-  pendingUsers,
-  rejectedUsers,
-  blockedUsers,
-  galleryImages,
-  newsItems,
-  events,
+  ]
 };
