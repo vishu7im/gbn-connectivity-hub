@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,8 +23,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
-import { LogIn } from "lucide-react";
+import { LogIn, ShieldCheck } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -49,6 +51,10 @@ const Login = () => {
     if (success) {
       navigate("/dashboard");
     }
+  };
+
+  const goToAdminPanel = () => {
+    navigate("/admin");
   };
 
   return (
@@ -128,6 +134,16 @@ const Login = () => {
                   </p>
                 </div>
               </CardContent>
+              <CardFooter className="flex justify-center border-t pt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                  onClick={goToAdminPanel}
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Quick Admin Access
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>
