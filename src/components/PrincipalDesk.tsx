@@ -1,53 +1,46 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserRound } from "lucide-react";
+
+// This would normally come from an API or context
+const principalData = {
+  name: "Dr. Sunil Kumar",
+  title: "Principal, GBN Polytechnic",
+  message: "Welcome to the GBN Polytechnic Alumni Portal. Our institution takes pride in the achievements of its alumni who are making significant contributions in various fields. This platform is designed to strengthen the bond between the institute and its alumni community, fostering collaboration, mentorship, and knowledge exchange. We believe in nurturing lifelong relationships with our students, and this alumni network is a testament to that commitment. I encourage all alumni to actively participate in our initiatives and help us build a vibrant community that supports the growth of both our current students and fellow alumni. Together, we can continue the legacy of excellence that GBN Polytechnic stands for.",
+  photo: "https://randomuser.me/api/portraits/men/1.jpg"
+};
 
 const PrincipalDesk = () => {
   return (
-    <section id="principal" className="py-12">
-      <div className="flex items-center gap-2 mb-6">
-        <User className="h-6 w-6 text-[#0a2463]" />
-        <h2 className="text-2xl font-bold text-[#0a2463]">From the Principal's Desk</h2>
-      </div>
+    <section className="py-10">
+      <h2 className="text-3xl font-bold mb-6 text-center">From the Principal's Desk</h2>
       
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
         <CardContent className="p-0">
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 bg-[#0a2463] p-6 flex flex-col justify-center items-center text-white">
-              <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-[#e6c200] mb-4">
-                <img 
-                  src="https://images.unsplash.com/photo-1537511446984-935f663eb1f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
-                  alt="Principal"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-1/3 p-8 flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 h-full">
+              <Avatar className="h-40 w-40 md:h-48 md:w-48 border-4 border-white dark:border-slate-700 shadow-xl mb-4">
+                <AvatarImage src={principalData.photo} alt={principalData.name} />
+                <AvatarFallback className="text-4xl">
+                  <UserRound className="h-16 w-16" />
+                </AvatarFallback>
+              </Avatar>
+              
               <div className="text-center">
-                <h3 className="text-xl font-bold">Dr. Rahul Sharma</h3>
-                <p className="text-gray-300">Principal, GBN Polytechnic</p>
+                <h3 className="text-xl md:text-2xl font-bold">{principalData.name}</h3>
+                <p className="text-sm md:text-base text-muted-foreground">{principalData.title}</p>
               </div>
             </div>
             
-            <div className="md:w-2/3 p-6 md:p-8">
-              <h3 className="text-xl font-bold mb-4 text-[#0a2463]">Dear Alumni,</h3>
-              <div className="space-y-4 text-gray-700">
-                <p>
-                  It gives me immense pleasure to connect with you through this alumni portal. The GBN Polytechnic has always taken pride in its graduates who have excelled in various fields across the globe.
-                </p>
-                <p>
-                  Our institution stands on the pillars of excellence, innovation, and integrity. The success stories of our alumni strengthen these pillars and inspire our current students to aim higher.
-                </p>
-                <p>
-                  I encourage all alumni to actively participate in the college activities, mentor our students, and contribute to the growth of your alma mater. Your experiences and insights are invaluable resources for the institution.
-                </p>
-                <p className="font-medium">
-                  Together, let us build a stronger network that benefits our institution, current students, and the alumni community.
-                </p>
-                <div className="pt-2">
-                  <p className="font-bold text-[#0a2463]">Dr. Rahul Sharma</p>
-                  <p className="text-gray-600">Principal, GBN Polytechnic</p>
-                </div>
-              </div>
+            <div className="md:w-2/3 p-8">
+              <blockquote className="text-lg italic">
+                <p className="mb-4 leading-relaxed">{principalData.message}</p>
+                <footer className="text-right mt-4">
+                  <div className="font-semibold">— {principalData.name}</div>
+                </footer>
+              </blockquote>
             </div>
           </div>
         </CardContent>

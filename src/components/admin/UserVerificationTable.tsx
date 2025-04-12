@@ -17,9 +17,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, Loader2, Ban, Lock, Unlock } from "lucide-react";
+import { Check, X, Loader2, Ban, Lock, Unlock, Eye, FileCheck, FilePlus } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { UserType } from "@/data/mockAdminData";
@@ -33,6 +34,7 @@ interface UserVerificationTableProps {
 const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = false }: UserVerificationTableProps) => {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [isRejectionOpen, setIsRejectionOpen] = useState(false);
+  const [isDocumentOpen, setIsDocumentOpen] = useState(false);
   const [rejectionRemarks, setRejectionRemarks] = useState("");
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
@@ -71,6 +73,11 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
     setIsRejectionOpen(true);
   };
 
+  const openDocumentDialog = (user: UserType) => {
+    setSelectedUser(user);
+    setIsDocumentOpen(true);
+  };
+
   if (!users || users.length === 0) {
     return (
       <div className="text-center py-10">
@@ -88,6 +95,7 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
             <TableHead>Email</TableHead>
             <TableHead>Batch</TableHead>
             <TableHead>Department</TableHead>
+            <TableHead>Document</TableHead>
             <TableHead>Registered On</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -113,6 +121,24 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.batch}</TableCell>
               <TableCell>{user.department}</TableCell>
+              <TableCell>
+                {user.verificationDocument ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center text-xs"
+                    onClick={() => openDocumentDialog(user)}
+                  >
+                    <FileCheck className="h-3 w-3 mr-1" />
+                    View Doc
+                  </Button>
+                ) : (
+                  <Badge variant="outline" className="text-xs">
+                    <FilePlus className="h-3 w-3 mr-1" />
+                    No Doc
+                  </Badge>
+                )}
+              </TableCell>
               <TableCell>
                 {user.createdAt
                   ? format(new Date(user.createdAt), "MMM d, yyyy")
@@ -193,6 +219,7 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
         </TableBody>
       </Table>
 
+      {/* Rejection Dialog */}
       <Dialog open={isRejectionOpen} onOpenChange={setIsRejectionOpen}>
         <DialogContent>
           <DialogHeader>
@@ -229,6 +256,75 @@ const UserVerificationTable = ({ users, isBlockedList = false, isRejectedList = 
               ) : (
                 "Reject User"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Viewer Dialog */}
+      <Dialog open={isDocumentOpen} onOpenChange={setIsDocumentOpen}>
+        <DialogContent className="max-w-3xl h-auto">
+          <DialogHeader>
+            <DialogTitle>Verification Document</DialogTitle>
+            <DialogDescription>
+              Document uploaded by {selectedUser?.name} for verification
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center">
+            {selectedUser?.verificationDocument ? (
+              <div className="mt-4 p-2 border rounded-md w-full max-h-[60vh] overflow-auto">
+                {selectedUser.verificationDocument.includes('image') ? (
+                  <img 
+                    src={selectedUser.verificationDocument} 
+                    alt="Verification Document" 
+                    className="mx-auto"
+                  />
+                ) : selectedUser.verificationDocument.includes('pdf') ? (
+                  <embed 
+                    src={selectedUser.verificationDocument} 
+                    type="application/pdf" 
+                    className="w-full h-[50vh]" 
+                  />
+                ) : (
+                  <div className="flex flex-col items-center p-8 text-center">
+                    <FileCheck className="h-16 w-16 text-blue-500 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Document available but preview is not supported.
+                      {selectedUser.documentType && (
+                        <span className="block mt-1 font-medium">
+                          Type: {selectedUser.documentType === 'other' ? 'Other Document' : 
+                            selectedUser.documentType === 'degree' ? 'Degree Certificate' : 
+                            selectedUser.documentType === 'id_card' ? 'College ID Card' : 'Marksheet'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center p-8 text-center">
+                <FilePlus className="h-16 w-16 text-gray-300 mb-2" />
+                <p className="text-sm text-muted-foreground">No document has been uploaded by this user</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex justify-between">
+            <div>
+              {selectedUser?.documentType && (
+                <Badge variant="outline" className="mr-2">
+                  {selectedUser.documentType === 'other' ? 'Other Document' : 
+                    selectedUser.documentType === 'degree' ? 'Degree Certificate' : 
+                    selectedUser.documentType === 'id_card' ? 'College ID Card' : 'Marksheet'}
+                </Badge>
+              )}
+              {selectedUser?.documentName && (
+                <Badge variant="secondary">
+                  {selectedUser.documentName}
+                </Badge>
+              )}
+            </div>
+            <Button variant="outline" onClick={() => setIsDocumentOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

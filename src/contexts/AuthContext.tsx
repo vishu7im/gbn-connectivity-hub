@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -6,7 +7,7 @@ const API_URL = "http://localhost:5000/api";
 
 interface User {
   _id: string;
-  id: string; // Added id field that maps to _id from MongoDB
+  id: string; 
   name: string;
   email: string;
   isAdmin: boolean;
@@ -19,11 +20,16 @@ interface User {
   company?: string;
   location?: string;
   profilePicture?: string;
-  phone?: string; // Added missing fields
+  phone?: string;
   bio?: string;
   linkedin?: string;
   facebook?: string;
   twitter?: string;
+  // New document fields
+  verificationDocument?: string;
+  documentType?: string;
+  documentName?: string;
+  isBlocked?: boolean;
   createdAt?: Date | string;
   lastLogin?: Date | string;
 }
@@ -33,13 +39,24 @@ interface AuthContextProps {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (name: string, email: string, password: string, batch: string, department: string) => Promise<boolean>;
+  register: (
+    name: string, 
+    email: string, 
+    password: string, 
+    batch: string, 
+    department: string,
+    rollNumber?: string,
+    verificationDocument?: string,
+    documentType?: string,
+    documentName?: string
+  ) => Promise<boolean>;
   updateProfile: (profileData: Partial<User>) => Promise<boolean>;
   createPost: (content: string, image?: string) => Promise<any>;
   addComment: (postId: string, content: string) => Promise<any>;
   likePost: (postId: string) => Promise<boolean>;
   sendMessage: (recipientId: number, content: string) => Promise<boolean>;
   markMessagesAsRead: (conversationKey: string) => void;
+  canAccessFeature: (feature: 'posts' | 'jobs') => boolean;
 }
 
 export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -74,7 +91,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkLoggedIn();
   }, []);
 
-  const register = async (name: string, email: string, password: string, batch: string, department: string): Promise<boolean> => {
+  const register = async (
+    name: string, 
+    email: string, 
+    password: string, 
+    batch: string, 
+    department: string,
+    rollNumber?: string,
+    verificationDocument?: string,
+    documentType?: string,
+    documentName?: string
+  ): Promise<boolean> => {
     try {
       setIsLoading(true);
       
@@ -83,7 +110,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         email,
         password,
         batch,
-        department
+        department,
+        rollNumber,
+        verificationDocument,
+        documentType,
+        documentName
       });
       
       const { token, user } = response.data;
@@ -158,6 +189,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Check if user can access features that require verification
+  const canAccessFeature = (feature: 'posts' | 'jobs'): boolean => {
+    if (!user) {
+      return false; // Not logged in
+    }
+    
+    // Check if user is verified and not blocked
+    return user.isVerified && 
+      user.verificationStatus === 'approved' && 
+      !user.isBlocked;
+  };
+
   const createPost = async (content: string, image?: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -167,7 +210,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return null;
       }
       
-      if (!user?.isVerified) {
+      if (!canAccessFeature('posts')) {
         toast.error("Your account must be verified to create posts");
         return null;
       }
@@ -196,7 +239,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return null;
       }
       
-      if (!user?.isVerified) {
+      if (!canAccessFeature('posts')) {
         toast.error("Your account must be verified to comment");
         return null;
       }
@@ -225,7 +268,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return false;
       }
       
-      if (!user?.isVerified) {
+      if (!canAccessFeature('posts')) {
         toast.error("Your account must be verified to like posts");
         return false;
       }
@@ -273,7 +316,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addComment,
       likePost,
       sendMessage,
-      markMessagesAsRead
+      markMessagesAsRead,
+      canAccessFeature
     }}>
       {children}
     </AuthContext.Provider>

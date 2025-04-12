@@ -81,12 +81,34 @@ const UserSchema = new mongoose.Schema({
   },
   verificationStatus: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
+    enum: ['pending', 'approved', 'rejected', 'blocked'],
     default: 'pending'
   },
   rejectionRemarks: {
     type: String,
     default: ''
+  },
+  // New fields for document verification
+  verificationDocument: {
+    type: String,
+    default: ''
+  },
+  documentType: {
+    type: String,
+    enum: ['degree', 'id_card', 'marksheet', 'other'],
+    default: 'other'
+  },
+  documentName: {
+    type: String,
+    trim: true
+  },
+  documentUploadDate: {
+    type: Date,
+    default: Date.now
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,

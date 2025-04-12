@@ -1,23 +1,31 @@
 
 import React from 'react';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { 
   LayoutDashboard, 
   Users, 
+  UserCheck,
+  UserX, 
   Image, 
   Newspaper, 
   Calendar, 
+  ChevronRight, 
   ChevronLeft, 
-  ChevronRight,
-  BarChart2,
-  UserCheck,
-  UserX,
+  MessageSquare, 
   Shield,
-  MessageSquare,
+  PieChart,
   Settings,
   User,
-  Mail
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+  LogOut,
+  Award,
+  Home,
+  FileText,
+  Briefcase
+} from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface AdminSidebarProps {
   open: boolean;
@@ -26,95 +34,232 @@ interface AdminSidebarProps {
   setActiveTab: (tab: string) => void;
 }
 
-const AdminSidebar = ({ open, setOpen, activeTab, setActiveTab }: AdminSidebarProps) => {
-  const navigationItems = [
+interface SidebarItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  onClick?: () => void;
+}
+
+interface SidebarSection {
+  title: string;
+  items: SidebarItem[];
+}
+
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ 
+  open, 
+  setOpen, 
+  activeTab, 
+  setActiveTab 
+}) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
+
+  const sidebarSections: SidebarSection[] = [
     {
-      group: "Overview",
+      title: "Overview",
       items: [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { id: "analytics", label: "Analytics", icon: BarChart2 },
-      ],
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: <LayoutDashboard className="h-5 w-5" />,
+        },
+        {
+          id: "homepage",
+          label: "View Homepage",
+          icon: <Home className="h-5 w-5" />,
+          onClick: () => handleNavigate('/')
+        }
+      ]
     },
     {
-      group: "User Management",
+      title: "User Management",
       items: [
-        { id: "all-users", label: "All Users", icon: Users },
-        { id: "user-verification", label: "Pending Users", icon: UserCheck },
-        { id: "users-rejected", label: "Rejected Users", icon: UserX },
-        { id: "users-blocked", label: "Blocked Users", icon: Shield },
-      ],
+        {
+          id: "all-users",
+          label: "All Users",
+          icon: <Users className="h-5 w-5" />,
+        },
+        {
+          id: "user-verification",
+          label: "Pending Verification",
+          icon: <UserCheck className="h-5 w-5" />,
+        },
+        {
+          id: "users-blocked",
+          label: "Blocked Users",
+          icon: <Shield className="h-5 w-5" />,
+        },
+        {
+          id: "users-rejected",
+          label: "Rejected Users",
+          icon: <UserX className="h-5 w-5" />,
+        }
+      ]
     },
     {
-      group: "Communication",
+      title: "Content Management",
       items: [
-        { id: "messages", label: "Messaging", icon: MessageSquare },
-        { id: "global-messages", label: "Contact Messages", icon: Mail },
-      ],
+        {
+          id: "carousel",
+          label: "Homepage Carousel",
+          icon: <Image className="h-5 w-5" />,
+        },
+        {
+          id: "principal",
+          label: "Principal's Desk",
+          icon: <User className="h-5 w-5" />,
+        },
+        {
+          id: "alumni-spotlight",
+          label: "Alumni Spotlight",
+          icon: <Award className="h-5 w-5" />,
+        },
+        {
+          id: "gallery",
+          label: "Photo Gallery",
+          icon: <Image className="h-5 w-5" />,
+        },
+        {
+          id: "news",
+          label: "News Articles",
+          icon: <Newspaper className="h-5 w-5" />,
+        },
+        {
+          id: "events",
+          label: "Events",
+          icon: <Calendar className="h-5 w-5" />,
+        }
+      ]
     },
     {
-      group: "Content",
+      title: "Moderation",
       items: [
-        { id: "gallery", label: "Gallery", icon: Image },
-        { id: "news", label: "News", icon: Newspaper },
-        { id: "events", label: "Events", icon: Calendar },
-      ],
+        {
+          id: "posts",
+          label: "Posts Moderation",
+          icon: <FileText className="h-5 w-5" />,
+        },
+        {
+          id: "jobs",
+          label: "Jobs Moderation",
+          icon: <Briefcase className="h-5 w-5" />,
+        }
+      ]
     },
     {
-      group: "Admin",
+      title: "Communication",
       items: [
-        { id: "settings", label: "Account Settings", icon: Settings },
-      ],
+        {
+          id: "messages",
+          label: "Direct Messages",
+          icon: <MessageSquare className="h-5 w-5" />,
+        },
+        {
+          id: "global-messages",
+          label: "Contact Messages",
+          icon: <MessageSquare className="h-5 w-5" />,
+        }
+      ]
     },
+    {
+      title: "System",
+      items: [
+        {
+          id: "analytics",
+          label: "Analytics",
+          icon: <PieChart className="h-5 w-5" />,
+        },
+        {
+          id: "settings",
+          label: "Account Settings",
+          icon: <Settings className="h-5 w-5" />,
+        },
+        {
+          id: "logout",
+          label: "Logout",
+          icon: <LogOut className="h-5 w-5" />,
+          onClick: handleLogout
+        }
+      ]
+    }
   ];
 
   return (
-    <div
+    <div 
       className={cn(
-        "h-full bg-slate-900 text-white fixed left-0 top-16 z-10 transition-all duration-300 dark:bg-slate-950",
+        "fixed inset-y-0 left-0 bg-white dark:bg-slate-900 border-r dark:border-slate-800 z-30 transition-all duration-300",
         open ? "w-64" : "w-20"
       )}
     >
-      <div className="absolute -right-3 top-20">
-        <button
-          onClick={() => setOpen(!open)}
-          className="rounded-full bg-slate-900 p-1 text-white shadow-md dark:bg-slate-950"
-        >
-          {open ? (
-            <ChevronLeft className="h-5 w-5" />
-          ) : (
-            <ChevronRight className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-
-      <div className="flex flex-col space-y-6 p-4 h-full overflow-y-auto">
-        {navigationItems.map((group) => (
-          <div key={group.group} className="space-y-2">
-            {open && (
-              <h3 className="text-xs uppercase text-slate-400 font-medium tracking-wider px-2">
-                {group.group}
-              </h3>
-            )}
-            <ul className="space-y-1">
-              {group.items.map((item) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => setActiveTab(item.id)}
-                    className={cn(
-                      "flex items-center w-full px-2 py-2 rounded-md transition-colors",
-                      activeTab === item.id
-                        ? "bg-slate-700 text-white"
-                        : "hover:bg-slate-800 text-slate-300"
-                    )}
-                  >
-                    <item.icon className={cn("h-5 w-5", !open && "mx-auto")} />
-                    {open && <span className="ml-3">{item.label}</span>}
-                  </button>
-                </li>
-              ))}
-            </ul>
+      <div className="flex flex-col h-full">
+        <div className="p-4 flex items-center justify-between">
+          <div className={cn("flex items-center", !open && "justify-center w-full")}>
+            <Shield className="h-8 w-8 text-primary" />
+            {open && <span className="ml-2 font-bold text-xl">Admin Panel</span>}
           </div>
-        ))}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setOpen(!open)}
+            className={cn("", !open && "hidden")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpen(!open)}
+            className={cn("", open && "hidden")}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <Separator />
+        
+        <div className="overflow-y-auto flex-1 py-4">
+          {sidebarSections.map((section, index) => (
+            <div key={index} className={cn("mb-6", !open && "px-2")}>
+              {open && (
+                <h3 className="mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {section.title}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={activeTab === item.id ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-full justify-start",
+                      !open && "px-2 justify-center"
+                    )}
+                    onClick={() => {
+                      if (item.onClick) {
+                        item.onClick();
+                      } else {
+                        setActiveTab(item.id);
+                      }
+                    }}
+                  >
+                    {item.icon}
+                    {open && <span className="ml-2">{item.label}</span>}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
