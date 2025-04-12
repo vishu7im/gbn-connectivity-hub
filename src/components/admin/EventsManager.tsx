@@ -61,9 +61,9 @@ const EventsManager = ({ events }: EventsManagerProps) => {
     setFormData({
       title: event.title,
       description: event.description,
-      event_date: format(new Date(event.event_date), "yyyy-MM-dd'T'HH:mm"),
+      event_date: format(new Date(event.event_date || event.date), "yyyy-MM-dd'T'HH:mm"),
       location: event.location,
-      registration_link: event.registration_link || "",
+      registration_link: event.registration_link || event.registrationLink || "",
       image: event.image || "",
     });
     setIsEditMode(true);
@@ -88,6 +88,7 @@ const EventsManager = ({ events }: EventsManagerProps) => {
                 location: formData.location,
                 registration_link: formData.registration_link || null,
                 image: formData.image || null,
+                organizer: "Admin User", // Use organizer instead of organizer_name
               }
             : event
         );
@@ -100,10 +101,12 @@ const EventsManager = ({ events }: EventsManagerProps) => {
           title: formData.title,
           description: formData.description,
           event_date: new Date(formData.event_date).toISOString(),
+          date: new Date(formData.event_date).toISOString(), // Set both date and event_date for compatibility
           location: formData.location,
           registration_link: formData.registration_link || null,
+          registrationLink: formData.registration_link || null, // Set both for compatibility
           image: formData.image || null,
-          organizer_name: "Admin User",
+          organizer: "Admin User", // Use organizer instead of organizer_name
         };
         setEventsList([newEvent, ...eventsList]);
         toast.success("Event created successfully");
@@ -177,7 +180,7 @@ const EventsManager = ({ events }: EventsManagerProps) => {
                 )}
                 <div className="flex items-center mb-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {format(new Date(event.event_date), "MMMM d, yyyy 'at' h:mm a")}
+                  {format(new Date(event.event_date || event.date), "MMMM d, yyyy 'at' h:mm a")}
                 </div>
                 <div className="flex items-center mb-3 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -186,9 +189,9 @@ const EventsManager = ({ events }: EventsManagerProps) => {
                 <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
                   {event.description}
                 </p>
-                {event.registration_link && (
+                {(event.registration_link || event.registrationLink) && (
                   <a 
-                    href={event.registration_link} 
+                    href={event.registration_link || event.registrationLink} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-xs text-primary flex items-center hover:underline"
@@ -198,7 +201,7 @@ const EventsManager = ({ events }: EventsManagerProps) => {
                 )}
               </CardContent>
               <CardFooter className="text-xs text-muted-foreground border-t pt-3">
-                Organized by {event.organizer_name}
+                Organized by {event.organizer || "Admin User"}
               </CardFooter>
             </Card>
           ))}
